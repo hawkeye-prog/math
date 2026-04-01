@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ Math Star Academy ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --pink:#ff6b9d;--purple:#c084fc;--blue:#60a5fa;--mint:#34d399;
+  --yellow:#fbbf24;--orange:#fb923c;--coral:#f87171;
+  --bg1:#fdf2f8;--bg2:#fae8ff;
+  --text:#4a1942;--card:#fff;
+}
+body{
+  font-family:'Fredoka',sans-serif;
+  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,#e0f2fe 100%);
+  min-height:100vh;color:var(--text);overflow-x:hidden;
+}
+.stars-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.star{position:absolute;width:8px;height:8px;background:var(--yellow);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);animation:twinkle 2s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.app{max-width:700px;margin:0 auto;padding:20px;position:relative;z-index:1}
+.header{text-align:center;padding:20px 0}
+.header h1{
+  font-family:'Baloo 2',cursive;font-size:2.2em;
+  background:linear-gradient(135deg,var(--pink),var(--purple),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:none;animation:titleBounce 3s ease-in-out infinite;
+}
+@keyframes titleBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.header .subtitle{font-size:1em;color:var(--purple);margin-top:4px;font-weight:500}
+
+.score-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  background:white;border-radius:20px;padding:12px 20px;
+  box-shadow:0 4px 15px rgba(192,132,252,.2);margin-bottom:20px;
+  border:2px solid var(--purple);
+}
+.score-item{display:flex;align-items:center;gap:6px;font-weight:600;font-size:.95em}
+.score-item .emoji{font-size:1.3em}
+.progress-wrap{width:100%;margin:0 10px}
+.progress-bar{height:12px;background:#f0e6ff;border-radius:10px;overflow:hidden;position:relative}
+.progress-fill{height:100%;border-radius:10px;transition:width .5s ease;background:linear-gradient(90deg,var(--pink),var(--purple),var(--blue))}
+
+.category-badge{
+  display:inline-block;padding:6px 16px;border-radius:20px;
+  font-size:.85em;font-weight:600;color:white;margin-bottom:12px;
+  animation:slideIn .4s ease;
+}
+.cat-geometry{background:linear-gradient(135deg,var(--blue),var(--purple))}
+.cat-operations{background:linear-gradient(135deg,var(--orange),var(--coral))}
+.cat-fractions{background:linear-gradient(135deg,var(--mint),var(--blue))}
+.cat-measurement{background:linear-gradient(135deg,var(--yellow),var(--orange))}
+.cat-patterns{background:linear-gradient(135deg,var(--pink),var(--purple))}
+.cat-data{background:linear-gradient(135deg,var(--purple),var(--pink))}
+
+.question-card{
+  background:white;border-radius:24px;padding:28px;
+  box-shadow:0 8px 30px rgba(192,132,252,.15);
+  border:3px solid transparent;
+  background-image:linear-gradient(white,white),linear-gradient(135deg,var(--pink),var(--purple),var(--blue));
+  background-origin:border-box;background-clip:padding-box,border-box;
+  animation:cardPop .4s ease;position:relative;overflow:hidden;
+}
+@keyframes cardPop{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes slideIn{0%{transform:translateX(-20px);opacity:0}100%{transform:translateX(0);opacity:1}}
+
+.question-num{font-size:.85em;color:var(--purple);font-weight:600;margin-bottom:8px}
+.question-text{font-size:1.15em;font-weight:600;line-height:1.5;margin-bottom:16px;color:var(--text)}
+.visual-area{
+  display:flex;justify-content:center;align-items:center;
+  margin:16px 0;padding:16px;background:#faf5ff;border-radius:16px;
+  min-height:80px;
+}
+.visual-area svg{max-width:100%}
+
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.option-btn{
+  padding:14px 16px;border-radius:16px;border:2.5px solid #e9d5ff;
+  background:white;cursor:pointer;font-family:'Fredoka',sans-serif;
+  font-size:1em;font-weight:500;color:var(--text);
+  transition:all .2s ease;text-align:center;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.option-btn:hover{border-color:var(--purple);background:#faf5ff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(192,132,252,.2)}
+.option-btn.selected{border-color:var(--purple);background:#f3e8ff}
+.option-btn.correct{border-color:var(--mint);background:#d1fae5;animation:correctPulse .5s ease}
+.option-btn.wrong{border-color:var(--coral);background:#fee2e2;animation:shake .4s ease}
+@keyframes correctPulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.option-btn:disabled{cursor:default}
+.option-btn:disabled:hover{transform:none;box-shadow:none}
+
+.input-area{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.input-area input{
+  flex:1;min-width:120px;padding:12px 16px;border-radius:14px;border:2.5px solid #e9d5ff;
+  font-family:'Fredoka',sans-serif;font-size:1.05em;color:var(--text);
+  outline:none;transition:border-color .2s;
+}
+.input-area input:focus{border-color:var(--purple)}
+.submit-btn{
+  padding:12px 24px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  color:white;font-family:'Fredoka',sans-serif;font-size:1em;
+  font-weight:600;cursor:pointer;transition:all .2s;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(192,132,252,.3)}
+
+.feedback{
+  margin-top:16px;padding:14px 18px;border-radius:14px;
+  font-weight:600;font-size:1em;animation:slideIn .3s ease;
+  display:flex;align-items:center;gap:8px;
+}
+.feedback.correct{background:#d1fae5;color:#065f46;border:2px solid var(--mint)}
+.feedback.wrong{background:#fee2e2;color:#991b1b;border:2px solid var(--coral)}
+.feedback .explain{font-weight:400;font-size:.9em;display:block;margin-top:4px}
+
+.next-btn{
+  display:block;margin:18px auto 0;padding:14px 36px;border-radius:18px;border:none;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  color:white;font-family:'Fredoka',sans-serif;font-size:1.05em;
+  font-weight:700;cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 15px rgba(96,165,250,.3);
+}
+.next-btn:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(96,165,250,.4)}
+
+.start-screen,.end-screen{text-align:center;padding:40px 20px}
+.start-screen h2{font-family:'Baloo 2',cursive;font-size:1.8em;color:var(--purple);margin-bottom:10px}
+.start-screen p{font-size:1.05em;color:#7c3aed;margin-bottom:24px;line-height:1.6}
+.start-btn{
+  padding:16px 48px;border-radius:22px;border:none;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:white;font-family:'Baloo 2',cursive;font-size:1.3em;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 6px 20px rgba(192,132,252,.35);
+}
+.start-btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 8px 25px rgba(192,132,252,.45)}
+
+.end-screen h2{font-family:'Baloo 2',cursive;font-size:2em;margin-bottom:10px}
+.end-score{font-size:3em;font-weight:800;margin:16px 0}
+.end-msg{font-size:1.1em;margin-bottom:24px;line-height:1.5}
+
+.mascot{font-size:3em;margin:10px 0;animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+.confetti{position:fixed;top:-10px;pointer-events:none;z-index:100;animation:confettiFall 3s linear forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+.streak-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 12px;border-radius:12px;
+  background:linear-gradient(135deg,var(--yellow),var(--orange));
+  color:white;font-size:.85em;font-weight:600;
+  animation:badgePop .3s ease;
+}
+@keyframes badgePop{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+.hint-text{font-size:.9em;color:#8b5cf6;font-style:italic;margin-top:8px}
+
+@media(max-width:500px){
+  .header h1{font-size:1.7em}
+  .options-grid{grid-template-columns:1fr}
+  .question-card{padding:20px}
+  .score-bar{flex-wrap:wrap;gap:8px;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<div class="stars-bg" id="starsBg"></div>
+
+<div class="app" id="app"></div>
+
+<script>
+// ============ QUESTION BANK (50+ questions) ============
+const questions = [
+  // ===== GEOMETRY (questions 1-12) =====
+  {
+    category:"geometry",
+    text:"What is the perimeter of this rectangle?",
+    visual:"rect", vData:{w:8,h:5,unit:"cm"},
+    type:"multi",
+    options:["26 cm","40 cm","13 cm","20 cm"],
+    answer:"26 cm",
+    explain:"Perimeter = 2 × (8 + 5) = 2 × 13 = 26 cm"
+  },
+  {
+    category:"geometry",
+    text:"What is the area of this rectangle?",
+    visual:"rect", vData:{w:7,h:4,unit:"sq cm"},
+    type:"multi",
+    options:["28 sq cm","22 sq cm","11 sq cm","32 sq cm"],
+    answer:"28 sq cm",
+    explain:"Area = 7 × 4 = 28 sq cm"
+  },
+  {
+    category:"geometry",
+    text:"How many lines of symmetry does this shape have?",
+    visual:"shape", vData:{shape:"square"},
+    type:"multi",
+    options:["4","2","1","8"],
+    answer:"4",
+    explain:"A square has 4 lines of symmetry — 2 through the midpoints and 2 through the corners."
+  },
+  {
+    category:"geometry",
+    text:"What type of angle is shown? (less than 90°)",
+    visual:"angle", vData:{deg:45,label:"45°"},
+    type:"multi",
+    options:["Acute angle","Right angle","Obtuse angle","Straight angle"],
+    answer:"Acute angle",
+    explain:"An angle less than 90° is called an acute angle."
+  },
+  {
+    category:"geometry",
+    text:"What type of angle is shown? (greater than 90°)",
+    visual:"angle", vData:{deg:120,label:"120°"},
+    type:"multi",
+    options:["Obtuse angle","Acute angle","Right angle","Reflex angle"],
+    answer:"Obtuse angle",
+    explain:"An angle between 90° and 180° is called an obtuse angle."
+  },
+  {
+    category:"geometry",
+    text:"Which of these is a line of symmetry for this triangle?",
+    visual:"shape", vData:{shape:"isoTriangle"},
+    type:"multi",
+    options:["A vertical line through the top","A horizontal line through the middle","A diagonal line","It has no line of symmetry"],
+    answer:"A vertical line through the top",
+    explain:"An isosceles triangle has one line of symmetry — straight down from the top vertex."
+  },
+  {
+    category:"geometry",
+    text:"What is the perimeter of a square with side length 9 inches?",
+    visual:"square", vData:{s:9,unit:"in"},
+    type:"multi",
+    options:["36 inches","81 inches","18 inches","27 inches"],
+    answer:"36 inches",
+    explain:"Perimeter of a square = 4 × side = 4 × 9 = 36 inches"
+  },
+  {
+    category:"geometry",
+    text:"What is the area of a square with side length 6 cm?",
+    visual:"square", vData:{s:6,unit:"cm"},
+    type:"input",
+    answer:"36",
+    answerUnit:"sq cm",
+    explain:"Area of a square = side × side = 6 × 6 = 36 sq cm"
+  },
+  {
+    category:"geometry",
+    text:"Are these two lines parallel, perpendicular, or neither?",
+    visual:"lines", vData:{type:"parallel"},
+    type:"multi",
+    options:["Parallel","Perpendicular","Neither","Intersecting"],
+    answer:"Parallel",
+    explain:"Parallel lines never cross and stay the same distance apart."
+  },
+  {
+    category:"geometry",
+    text:"Are these two lines parallel, perpendicular, or neither?",
+    visual:"lines", vData:{type:"perpendicular"},
+    type:"multi",
+    options:["Perpendicular","Parallel","Neither","Curved"],
+    answer:"Perpendicular",
+    explain:"Perpendicular lines meet at a 90° (right) angle."
+  },
+  {
+    category:"geometry",
+    text:"A rectangle has a perimeter of 30 cm. Its length is 10 cm. What is its width?",
+    visual:"rectMissing", vData:{perim:30,l:10},
+    type:"input",
+    answer:"5",
+    answerUnit:"cm",
+    explain:"Perimeter = 2×(L+W). 30 = 2×(10+W). 15 = 10+W. W = 5 cm"
+  },
+  {
+    category:"geometry",
+    text:"How many right angles does a rectangle have?",
+    visual:"shape", vData:{shape:"rectangle"},
+    type:"multi",
+    options:["4","2","1","3"],
+    answer:"4",
+    explain:"A rectangle has 4 corners and every corner is a right angle (90°)."
+  },
+
+  // ===== OPERATIONS (questions 13-22) =====
+  {
+    category:"operations",
+    text:"What is 47 × 63?",
+    type:"input",
+    answer:"2961",
+    explain:"47 × 63 = 47 × 60 + 47 × 3 = 2820 + 141 = 2,961"
+  },
+  {
+    category:"operations",
+    text:"What is 8,405 − 3,678?",
+    type:"multi",
+    options:["4,727","4,837","5,727","4,637"],
+    answer:"4,727",
+    explain:"8,405 − 3,678 = 4,727 (regroup from hundreds and thousands)"
+  },
+  {
+    category:"operations",
+    text:"What is the value of 6 × (3 + 8)?",
+    type:"multi",
+    options:["66","26","54","88"],
+    answer:"66",
+    explain:"Parentheses first: 3 + 8 = 11. Then 6 × 11 = 66."
+  },
+  {
+    category:"operations",
+    text:"What is 7,254 ÷ 6?",
+    type:"multi",
+    options:["1,209","1,259","1,200","1,290"],
+    answer:"1,209",
+    explain:"7,254 ÷ 6 = 1,209. Check: 1,209 × 6 = 7,254 ✓"
+  },
+  {
+    category:"operations",
+    text:"Round 8,462 to the nearest hundred.",
+    type:"multi",
+    options:["8,500","8,400","8,460","9,000"],
+    answer:"8,500",
+    explain:"The tens digit is 6 (≥ 5), so round up: 8,462 → 8,500"
+  },
+  {
+    category:"operations",
+    text:"What is 12 × 25?",
+    type:"input",
+    answer:"300",
+    explain:"12 × 25 = 12 × 25. Think: 12 × 100 ÷ 4 = 1200 ÷ 4 = 300"
+  },
+  {
+    category:"operations",
+    text:"Which number sentence is true?",
+    type:"multi",
+    options:["45 × 3 > 44 × 3","45 × 3 < 44 × 3","45 × 3 = 44 × 3","None of these"],
+    answer:"45 × 3 > 44 × 3",
+    explain:"45 × 3 = 135 and 44 × 3 = 132. Since 135 > 132, that's correct!"
+  },
+  {
+    category:"operations",
+    text:"What is the remainder when 47 is divided by 5?",
+    type:"multi",
+    options:["2","3","7","1"],
+    answer:"2",
+    explain:"47 ÷ 5 = 9 remainder 2 (since 9 × 5 = 45, and 47 − 45 = 2)"
+  },
+  {
+    category:"operations",
+    text:"There are 24 students sharing 150 stickers equally. How many stickers does each student get, and how many are left over?",
+    type:"multi",
+    options:["6 each, 6 left","6 each, 2 left","7 each, 0 left","5 each, 30 left"],
+    answer:"6 each, 6 left",
+    explain:"150 ÷ 24 = 6 remainder 6. Check: 24 × 6 = 144, and 150 − 144 = 6"
+  },
+
+  // ===== FRACTIONS (questions 23-33) =====
+  {
+    category:"fractions",
+    text:"Which fraction is equivalent to 2/4?",
+    visual:"fraction", vData:{n:2,d:4},
+    type:"multi",
+    options:["1/2","3/4","2/3","1/4"],
+    answer:"1/2",
+    explain:"2/4 simplifies to 1/2 (divide top and bottom by 2)."
+  },
+  {
+    category:"fractions",
+    text:"What is 3/8 + 2/8?",
+    visual:"fractionAdd", vData:{n1:3,n2:2,d:8},
+    type:"multi",
+    options:["5/8","5/16","6/8","1/8"],
+    answer:"5/8",
+    explain:"Same denominators: 3/8 + 2/8 = (3+2)/8 = 5/8"
+  },
+  {
+    category:"fractions",
+    text:"What is 7/10 − 3/10?",
+    type:"multi",
+    options:["4/10","10/10","4/20","3/7"],
+    answer:"4/10",
+    explain:"Same denominators: 7/10 − 3/10 = (7−3)/10 = 4/10"
+  },
+  {
+    category:"fractions",
+    text:"Compare: Which is greater, 3/4 or 2/3?",
+    type:"multi",
+    options:["3/4","2/3","They are equal","Cannot tell"],
+    answer:"3/4",
+    explain:"3/4 = 9/12 and 2/3 = 8/12. Since 9/12 > 8/12, 3/4 is greater."
+  },
+  {
+    category:"fractions",
+    text:"Convert the improper fraction 11/4 to a mixed number.",
+    type:"multi",
+    options:["2 3/4","3 1/4","2 1/4","1 3/4"],
+    answer:"2 3/4",
+    explain:"11 ÷ 4 = 2 remainder 3, so 11/4 = 2 3/4"
+  },
+  {
+    category:"fractions",
+    text:"What is 3/5 + 1/10?",
+    type:"multi",
+    options:["7/10","4/15","4/10","2/5"],
+    answer:"7/10",
+    explain:"Convert 3/5 to 6/10. Then 6/10 + 1/10 = 7/10."
+  },
+  {
+    category:"fractions",
+    text:"Write 0.75 as a fraction.",
+    type:"multi",
+    options:["3/4","7/5","75/10","7/4"],
+    answer:"3/4",
+    explain:"0.75 = 75/100 = 3/4 (divide numerator and denominator by 25)."
+  },
+  {
+    category:"fractions",
+    text:"What is 3 × 2/5?",
+    type:"multi",
+    options:["6/5","6/15","2/15","5/5"],
+    answer:"6/5",
+    explain:"3 × 2/5 = (3 × 2)/5 = 6/5 (or 1 1/5)"
+  },
+  {
+    category:"fractions",
+    text:"Put these fractions in order from least to greatest: 1/2, 1/4, 3/4",
+    type:"multi",
+    options:["1/4, 1/2, 3/4","1/2, 1/4, 3/4","3/4, 1/2, 1/4","1/4, 3/4, 1/2"],
+    answer:"1/4, 1/2, 3/4",
+    explain:"1/4 = 0.25, 1/2 = 0.50, 3/4 = 0.75. Smallest to largest!"
+  },
+  {
+    category:"fractions",
+    text:"Which fraction is greater: 5/6 or 4/5?",
+    type:"multi",
+    options:["5/6","4/5","They are equal","Cannot compare"],
+    answer:"5/6",
+    explain:"5/6 = 25/30 and 4/5 = 24/30. Since 25 > 24, 5/6 is greater."
+  },
+  {
+    category:"fractions",
+    text:"What is 1/3 + 1/6?",
+    type:"multi",
+    options:["1/2","2/9","2/6","1/6"],
+    answer:"1/2",
+    explain:"Convert 1/3 to 2/6. Then 2/6 + 1/6 = 3/6 = 1/2"
+  },
+
+  // ===== MEASUREMENT (questions 34-41) =====
+  {
+    category:"measurement",
+    text:"How many minutes are in 3 hours and 15 minutes?",
+    type:"input",
+    answer:"195",
+    answerUnit:"minutes",
+    explain:"3 hours = 3 × 60 = 180 minutes. 180 + 15 = 195 minutes."
+  },
+  {
+    category:"measurement",
+    text:"How many ounces are in 3 pounds? (1 pound = 16 ounces)",
+    type:"input",
+    answer:"48",
+    answerUnit:"ounces",
+    explain:"3 × 16 = 48 ounces"
+  },
+  {
+    category:"measurement",
+    text:"A movie starts at 2:45 PM and is 1 hour 50 minutes long. What time does it end?",
+    type:"multi",
+    options:["4:35 PM","4:45 PM","3:95 PM","3:35 PM"],
+    answer:"4:35 PM",
+    explain:"2:45 + 1 hour = 3:45. Then + 50 min = 4:35 PM."
+  },
+  {
+    category:"measurement",
+    text:"How many centimeters are in 2.5 meters?",
+    type:"input",
+    answer:"250",
+    answerUnit:"cm",
+    explain:"1 meter = 100 cm. So 2.5 × 100 = 250 cm."
+  },
+  {
+    category:"measurement",
+    text:"A jug holds 4 liters. How many milliliters is that?",
+    type:"multi",
+    options:["4,000 mL","400 mL","40 mL","40,000 mL"],
+    answer:"4,000 mL",
+    explain:"1 liter = 1,000 mL. So 4 × 1,000 = 4,000 mL."
+  },
+  {
+    category:"measurement",
+    text:"Which is longer: 5 feet or 60 inches? (1 foot = 12 inches)",
+    type:"multi",
+    options:["They are equal","5 feet is longer","60 inches is longer","Cannot compare"],
+    answer:"They are equal",
+    explain:"5 feet = 5 × 12 = 60 inches. They are equal!"
+  },
+  {
+    category:"measurement",
+    text:"How many grams are in 3 kilograms?",
+    type:"input",
+    answer:"3000",
+    answerUnit:"grams",
+    explain:"1 kilogram = 1,000 grams. 3 × 1,000 = 3,000 grams."
+  },
+  {
+    category:"measurement",
+    text:"A room is 12 feet long and 9 feet wide. What is its area?",
+    type:"multi",
+    options:["108 sq ft","42 sq ft","21 sq ft","84 sq ft"],
+    answer:"108 sq ft",
+    explain:"Area = length × width = 12 × 9 = 108 sq ft"
+  },
+
+  // ===== PATTERNS & ALGEBRA (questions 42-47) =====
+  {
+    category:"patterns",
+    text:"What is the rule? 5, 12, 19, 26, 33, ...",
+    type:"multi",
+    options:["Add 7","Add 5","Multiply by 2","Add 8"],
+    answer:"Add 7",
+    explain:"12−5=7, 19−12=7, 26−19=7. The rule is add 7!"
+  },
+  {
+    category:"patterns",
+    text:"What number comes next? 3, 6, 12, 24, __",
+    type:"input",
+    answer:"48",
+    explain:"Each number is multiplied by 2: 3→6→12→24→48"
+  },
+  {
+    category:"patterns",
+    text:"Find the missing number: ☐ × 7 = 91",
+    type:"input",
+    answer:"13",
+    explain:"91 ÷ 7 = 13. Check: 13 × 7 = 91 ✓"
+  },
+  {
+    category:"patterns",
+    text:"If n + 15 = 42, what is n?",
+    type:"input",
+    answer:"27",
+    explain:"n = 42 − 15 = 27"
+  },
+  {
+    category:"patterns",
+    text:"What is the rule? 100, 91, 82, 73, 64, ...",
+    type:"multi",
+    options:["Subtract 9","Subtract 10","Divide by 2","Subtract 8"],
+    answer:"Subtract 9",
+    explain:"100−91=9, 91−82=9, 82−73=9. The rule is subtract 9!"
+  },
+  {
+    category:"patterns",
+    text:"Which expression equals 36? (4 + 5) × 4 or 4 + 5 × 4?",
+    type:"multi",
+    options:["(4 + 5) × 4 = 36","4 + 5 × 4 = 36","Both equal 36","Neither equals 36"],
+    answer:"(4 + 5) × 4 = 36",
+    explain:"(4+5)×4 = 9×4 = 36. But 4+5×4 = 4+20 = 24 (order of operations!)."
+  },
+
+  // ===== DATA & GRAPHS (questions 48-53) =====
+  {
+    category:"data",
+    text:"Look at the bar graph. How many more students chose pizza than tacos?",
+    visual:"barGraph", vData:{title:"Favorite Lunch",items:[{label:"Pizza",val:12},{label:"Tacos",val:7},{label:"Pasta",val:5},{label:"Salad",val:3}]},
+    type:"input",
+    answer:"5",
+    explain:"Pizza = 12, Tacos = 7. Difference = 12 − 7 = 5 students."
+  },
+  {
+    category:"data",
+    text:"What is the mean (average) of these numbers: 8, 12, 6, 10, 14?",
+    type:"input",
+    answer:"10",
+    explain:"Sum = 8+12+6+10+14 = 50. Mean = 50 ÷ 5 = 10"
+  },
+  {
+    category:"data",
+    text:"Look at the bar graph. How many students were surveyed in total?",
+    visual:"barGraph", vData:{title:"Favorite Color",items:[{label:"Blue",val:9},{label:"Pink",val:11},{label:"Green",val:5},{label:"Red",val:7}]},
+    type:"multi",
+    options:["32","27","35","30"],
+    answer:"32",
+    explain:"9 + 11 + 5 + 7 = 32 students in total."
+  },
+  {
+    category:"data",
+    text:"Look at the pictograph. Each ⭐ = 2 books. Emma has ⭐⭐⭐⭐. How many books did Emma read?",
+    visual:"pictograph", vData:{name:"Emma",symbol:"⭐",symbolVal:2,count:4},
+    type:"input",
+    answer:"8",
+    explain:"Each ⭐ = 2 books. Emma has 4 stars. 4 × 2 = 8 books!"
+  },
+  {
+    category:"data",
+    text:"The line plot shows shoe sizes: 4, 4, 5, 5, 5, 6, 6, 7. What is the most common (mode) shoe size?",
+    type:"multi",
+    options:["5","6","4","7"],
+    answer:"5",
+    explain:"Size 5 appears 3 times, more than any other size. That's the mode!"
+  },
+  {
+    category:"data",
+    text:"A survey found: 15 like dogs, 10 like cats, 5 like both. How many like only dogs?",
+    type:"multi",
+    options:["10","15","5","20"],
+    answer:"10",
+    explain:"Like only dogs = total dogs − both = 15 − 5 = 10"
+  },
+];
+
+// ============ APP STATE ============
+let state = {
+  screen:'start', current:0, score:0, streak:0, maxStreak:0,
+  answered:false, order:[], totalQ: questions.length
+};
+
+// ============ SHUFFLE ============
+function shuffle(arr){
+  let a=[...arr];
+  for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+  return a;
+}
+
+// Build order: start with geometry, then shuffle the rest
+function buildOrder(){
+  let geoIdx=[], otherIdx=[];
+  questions.forEach((q,i)=>{
+    if(q.category==='geometry') geoIdx.push(i); else otherIdx.push(i);
+  });
+  return [...shuffle(geoIdx), ...shuffle(otherIdx)];
+}
+
+// ============ VISUALS (SVG) ============
+function renderVisual(q){
+  if(!q.visual) return '';
+  const v = q.vData;
+  switch(q.visual){
+    case 'rect': return `<svg width="220" height="140" viewBox="0 0 220 140">
+      <rect x="20" y="20" width="180" height="100" rx="4" fill="#e9d5ff" stroke="#8b5cf6" stroke-width="3"/>
+      <text x="110" y="78" text-anchor="middle" font-family="Fredoka" font-size="18" fill="#5b21b6">${v.w} ${v.unit?.replace('sq ','') || ''}</text>
+      <text x="5" y="78" text-anchor="middle" font-family="Fredoka" font-size="16" fill="#5b21b6" transform="rotate(-90 10 70)">${v.h} ${v.unit?.replace('sq ','') || ''}</text>
+    </svg>`;
+    case 'square': return `<svg width="160" height="160" viewBox="0 0 160 160">
+      <rect x="20" y="20" width="120" height="120" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="3"/>
+      <text x="80" y="85" text-anchor="middle" font-family="Fredoka" font-size="18" fill="#1e40af">${v.s} ${v.unit}</text>
+      <text x="80" y="155" text-anchor="middle" font-family="Fredoka" font-size="14" fill="#1e40af">side = ${v.s} ${v.unit}</text>
+    </svg>`;
+    case 'angle': {
+      const rad = v.deg * Math.PI/180;
+      const x2=30+80*Math.cos(-rad), y2=100-80*Math.sin(rad);
+      return `<svg width="200" height="140" viewBox="0 0 200 140">
+        <line x1="30" y1="100" x2="170" y2="100" stroke="#f472b6" stroke-width="3"/>
+        <line x1="30" y1="100" x2="${x2}" y2="${y2}" stroke="#f472b6" stroke-width="3"/>
+        <path d="M 60 100 A 30 30 0 0 1 ${30+30*Math.cos(-rad)} ${100-30*Math.sin(rad)}" fill="none" stroke="#c084fc" stroke-width="2"/>
+        <text x="75" y="88" font-family="Fredoka" font-size="16" fill="#7c3aed">${v.label}</text>
+      </svg>`;
+    }
+    case 'shape':
+      if(v.shape==='square') return `<svg width="140" height="140" viewBox="0 0 140 140">
+        <rect x="20" y="20" width="100" height="100" fill="#dbeafe" stroke="#3b82f6" stroke-width="3" rx="2"/>
+        <text x="70" y="75" text-anchor="middle" font-family="Fredoka" font-size="14" fill="#1e40af">Square</text>
+        ${[{x:20,y:20},{x:120,y:20},{x:120,y:120},{x:20,y:120}].map(c=>`<rect x="${c.x-5}" y="${c.y-5}" width="10" height="10" fill="none" stroke="#f472b6" stroke-width="2"/>`).join('')}
+      </svg>`;
+      if(v.shape==='rectangle') return `<svg width="200" height="130" viewBox="0 0 200 130">
+        <rect x="15" y="15" width="170" height="100" fill="#fce7f3" stroke="#ec4899" stroke-width="3" rx="2"/>
+        ${[{x:15,y:15},{x:185,y:15},{x:185,y:115},{x:15,y:115}].map(c=>`<rect x="${c.x-6}" y="${c.y-6}" width="12" height="12" fill="none" stroke="#8b5cf6" stroke-width="2"/>`).join('')}
+        <text x="100" y="68" text-anchor="middle" font-family="Fredoka" font-size="14" fill="#9333ea">Rectangle</text>
+      </svg>`;
+      if(v.shape==='isoTriangle') return `<svg width="180" height="160" viewBox="0 0 180 160">
+        <polygon points="90,15 25,140 155,140" fill="#d1fae5" stroke="#10b981" stroke-width="3"/>
+        <line x1="90" y1="15" x2="90" y2="140" stroke="#c084fc" stroke-width="2" stroke-dasharray="6"/>
+        <text x="90" y="100" text-anchor="middle" font-family="Fredoka" font-size="13" fill="#059669">Isosceles</text>
+      </svg>`;
+      return '';
+    case 'lines':
+      if(v.type==='parallel') return `<svg width="200" height="100" viewBox="0 0 200 100">
+        <line x1="20" y1="30" x2="180" y2="30" stroke="#f472b6" stroke-width="3"/>
+        <line x1="20" y1="70" x2="180" y2="70" stroke="#8b5cf6" stroke-width="3"/>
+        <text x="100" y="58" text-anchor="middle" font-family="Fredoka" font-size="12" fill="#7c3aed">↕ same distance apart</text>
+      </svg>`;
+      if(v.type==='perpendicular') return `<svg width="160" height="160" viewBox="0 0 160 160">
+        <line x1="80" y1="10" x2="80" y2="150" stroke="#f472b6" stroke-width="3"/>
+        <line x1="10" y1="80" x2="150" y2="80" stroke="#8b5cf6" stroke-width="3"/>
+        <rect x="80" y="80" width="14" height="14" fill="none" stroke="#10b981" stroke-width="2"/>
+      </svg>`;
+      return '';
+    case 'rectMissing': return `<svg width="220" height="140" viewBox="0 0 220 140">
+      <rect x="20" y="20" width="180" height="100" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8"/>
+      <text x="110" y="15" text-anchor="middle" font-family="Fredoka" font-size="16" fill="#d97706">${v.l} cm</text>
+      <text x="5" y="78" text-anchor="middle" font-family="Fredoka" font-size="16" fill="#d97706" transform="rotate(-90 10 70)">? cm</text>
+      <text x="110" y="78" text-anchor="middle" font-family="Fredoka" font-size="14" fill="#92400e">Perimeter = ${v.perim} cm</text>
+    </svg>`;
+    case 'fraction': return `<svg width="200" height="80" viewBox="0 0 200 80">
+      ${Array.from({length:v.d},(_, i)=>`<rect x="${10+i*45}" y="15" width="40" height="50" rx="6" fill="${i<v.n?'#c084fc':'#f3e8ff'}" stroke="#8b5cf6" stroke-width="2"/>`).join('')}
+      <text x="100" y="78" text-anchor="middle" font-family="Fredoka" font-size="13" fill="#6b21a8">${v.n}/${v.d} shaded</text>
+    </svg>`;
+    case 'fractionAdd': return `<svg width="280" height="60" viewBox="0 0 280 60">
+      ${Array.from({length:v.d},(_, i)=>`<rect x="${5+i*33}" y="8" width="28" height="44" rx="5" fill="${i<v.n1?'#f472b6':i<v.n1+v.n2?'#60a5fa':'#f0e6ff'}" stroke="#8b5cf6" stroke-width="2"/>`).join('')}
+      <text x="140" y="54" text-anchor="middle" font-family="Fredoka" font-size="11" fill="#6b21a8">${v.n1}/${v.d} + ${v.n2}/${v.d}</text>
+    </svg>`;
+    case 'barGraph': {
+      const max = Math.max(...v.items.map(i=>i.val));
+      const bw=40, gap=15, w=v.items.length*(bw+gap)+40, h=160;
+      const colors=['#c084fc','#f472b6','#60a5fa','#34d399'];
+      let bars='';
+      v.items.forEach((item,i)=>{
+        const bh = (item.val/max)*100;
+        const x=30+i*(bw+gap), y=h-20-bh;
+        bars+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="4" fill="${colors[i%4]}"/>`;
+        bars+=`<text x="${x+bw/2}" y="${y-5}" text-anchor="middle" font-family="Fredoka" font-size="13" fill="#4a1942">${item.val}</text>`;
+        bars+=`<text x="${x+bw/2}" y="${h-5}" text-anchor="middle" font-family="Fredoka" font-size="11" fill="#4a1942">${item.label}</text>`;
+      });
+      return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+        <line x1="25" y1="${h-20}" x2="${w-5}" y2="${h-20}" stroke="#d1d5db" stroke-width="1.5"/>
+        ${bars}
+        <text x="${w/2}" y="14" text-anchor="middle" font-family="Fredoka" font-size="13" font-weight="600" fill="#7c3aed">${v.title}</text>
+      </svg>`;
+    }
+    case 'pictograph': return `<div style="text-align:center;font-family:Fredoka;color:#4a1942">
+      <div style="font-weight:600;margin-bottom:6px">${v.name}'s Books Read</div>
+      <div style="font-size:2em;letter-spacing:6px">${v.symbol.repeat(v.count)}</div>
+      <div style="font-size:.85em;color:#7c3aed;margin-top:6px">Each ${v.symbol} = ${v.symbolVal} books</div>
+    </div>`;
+    default: return '';
+  }
+}
+
+// ============ RENDER ============
+const app = document.getElementById('app');
+
+function render(){
+  if(state.screen==='start') return renderStart();
+  if(state.screen==='end') return renderEnd();
+  renderQuestion();
+}
+
+function renderStart(){
+  app.innerHTML=`
+    <div class="header">
+      <h1>✨ Math Star Academy ✨</h1>
+      <div class="subtitle">Illinois IAR • 4th Grade Math Practice</div>
+    </div>
+    <div class="start-screen">
+      <div class="mascot">🦄</div>
+      <h2>Ready to Become a Math Star?</h2>
+      <p>Practice ${state.totalQ} fun questions across geometry, fractions, operations, measurement, patterns & data! You'll earn stars and build streaks!<br>Let's start with <strong>Geometry</strong>! 🌟</p>
+      <button class="start-btn" onclick="startQuiz()">Let's Go! 🚀</button>
+    </div>`;
+}
+
+function renderEnd(){
+  const pct = Math.round(state.score/state.totalQ*100);
+  let emoji='🎉', msg='';
+  if(pct===100){emoji='👑';msg="PERFECT SCORE! You're a Math Queen!";}
+  else if(pct>=80){emoji='🌟';msg="Amazing job! You're a Math Star!";}
+  else if(pct>=60){emoji='💪';msg="Great effort! Keep practicing!";}
+  else{emoji='🌈';msg="Nice try! Practice makes perfect!";}
+  app.innerHTML=`
+    <div class="header">
+      <h1>✨ Math Star Academy ✨</h1>
+    </div>
+    <div class="end-screen">
+      <div class="mascot">${emoji}</div>
+      <h2>Quiz Complete!</h2>
+      <div class="end-score" style="background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${state.score} / ${state.totalQ}</div>
+      <div class="end-msg">${msg}<br>Best streak: 🔥 ${state.maxStreak} in a row!</div>
+      <button class="start-btn" onclick="restartQuiz()">Play Again 🔄</button>
+    </div>`;
+  if(pct>=60) spawnConfetti();
+}
+
+function catClass(c){
+  const m={geometry:'cat-geometry',operations:'cat-operations',fractions:'cat-fractions',measurement:'cat-measurement',patterns:'cat-patterns',data:'cat-data'};
+  return m[c]||'cat-geometry';
+}
+function catLabel(c){
+  const m={geometry:'📐 Geometry',operations:'✖️ Operations',fractions:'🍕 Fractions',measurement:'📏 Measurement',patterns:'🔢 Patterns & Algebra',data:'📊 Data & Graphs'};
+  return m[c]||c;
+}
+
+function renderQuestion(){
+  const idx = state.order[state.current];
+  const q = questions[idx];
+  const vis = renderVisual(q);
+  const progress = ((state.current)/state.totalQ*100);
+
+  let optionsHTML='';
+  if(q.type==='multi'){
+    optionsHTML=`<div class="options-grid">${q.options.map((o,i)=>
+      `<button class="option-btn" id="opt${i}" onclick="checkMulti(${i})" ${state.answered?'disabled':''}>${o}</button>`
+    ).join('')}</div>`;
+  } else {
+    optionsHTML=`<div class="input-area">
+      <input type="text" id="ansInput" placeholder="Type your answer..." ${state.answered?'disabled':''} onkeydown="if(event.key==='Enter')checkInput()"/>
+      <button class="submit-btn" onclick="checkInput()" ${state.answered?'disabled':''}>Check ✓</button>
+    </div>`;
+    if(q.answerUnit) optionsHTML+=`<div class="hint-text">Answer in ${q.answerUnit}</div>`;
+  }
+
+  app.innerHTML=`
+    <div class="header">
+      <h1>✨ Math Star Academy ✨</h1>
+      <div class="subtitle">Illinois IAR • 4th Grade</div>
+    </div>
+    <div class="score-bar">
+      <div class="score-item"><span class="emoji">⭐</span>${state.score}</div>
+      <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div></div>
+      <div class="score-item">${state.streak>=2?`<span class="streak-badge">🔥 ${state.streak}</span>`:`<span class="emoji">📝</span>`} ${state.current+1}/${state.totalQ}</div>
+    </div>
+    <div class="question-card">
+      <span class="category-badge ${catClass(q.category)}">${catLabel(q.category)}</span>
+      <div class="question-num">Question ${state.current+1} of ${state.totalQ}</div>
+      <div class="question-text">${q.text}</div>
+      ${vis?`<div class="visual-area">${vis}</div>`:''}
+      ${optionsHTML}
+      <div id="feedback"></div>
+      ${state.answered?`<button class="next-btn" onclick="nextQuestion()">${state.current<state.totalQ-1?'Next Question ➜':'See Results 🏆'}</button>`:''}
+    </div>`;
+
+  if(!state.answered && q.type==='input'){
+    setTimeout(()=>{const inp=document.getElementById('ansInput');if(inp)inp.focus();},100);
+  }
+}
+
+// ============ ANSWER CHECKING ============
+function normalize(s){
+  return String(s).trim().replace(/,/g,'').replace(/\s+/g,' ').toLowerCase();
+}
+
+function checkMulti(i){
+  if(state.answered) return;
+  state.answered=true;
+  const idx=state.order[state.current];
+  const q=questions[idx];
+  const chosen=q.options[i];
+  const correct=normalize(chosen)===normalize(q.answer);
+  if(correct){state.score++;state.streak++;if(state.streak>state.maxStreak)state.maxStreak=state.streak;}
+  else{state.streak=0;}
+  // Highlight buttons
+  q.options.forEach((o,j)=>{
+    const btn=document.getElementById('opt'+j);
+    if(normalize(o)===normalize(q.answer)) btn.classList.add('correct');
+    else if(j===i) btn.classList.add('wrong');
+    btn.disabled=true;
+  });
+  showFeedback(correct, q.explain);
+  if(correct) spawnMiniConfetti();
+  // Re-render to show next button
+  const fb=document.getElementById('feedback');
+  fb.insertAdjacentHTML('afterend',`<button class="next-btn" onclick="nextQuestion()">${state.current<state.totalQ-1?'Next Question ➜':'See Results 🏆'}</button>`);
+}
+
+function checkInput(){
+  if(state.answered) return;
+  const inp=document.getElementById('ansInput');
+  if(!inp) return;
+  const val=normalize(inp.value);
+  if(!val){inp.style.borderColor='var(--coral)';return;}
+  state.answered=true;
+  const idx=state.order[state.current];
+  const q=questions[idx];
+  const correct=val===normalize(q.answer);
+  if(correct){state.score++;state.streak++;if(state.streak>state.maxStreak)state.maxStreak=state.streak;}
+  else{state.streak=0;}
+  inp.disabled=true;
+  inp.style.borderColor=correct?'var(--mint)':'var(--coral)';
+  inp.style.background=correct?'#d1fae5':'#fee2e2';
+  showFeedback(correct, q.explain, q.answer+(q.answerUnit?' '+q.answerUnit:''));
+  if(correct) spawnMiniConfetti();
+  const fb=document.getElementById('feedback');
+  fb.insertAdjacentHTML('afterend',`<button class="next-btn" onclick="nextQuestion()">${state.current<state.totalQ-1?'Next Question ➜':'See Results 🏆'}</button>`);
+}
+
+function showFeedback(correct, explain, correctAnswer){
+  const fb=document.getElementById('feedback');
+  if(correct){
+    const msgs=['You got it! 🎉','Amazing! 🌟','Correct! ⭐','Way to go! 💖','Brilliant! 🦄','Nailed it! 🎯'];
+    fb.innerHTML=`<div class="feedback correct">${msgs[Math.floor(Math.random()*msgs.length)]}<span class="explain">${explain}</span></div>`;
+  } else {
+    fb.innerHTML=`<div class="feedback wrong">Not quite! ${correctAnswer?'The answer is <strong>'+correctAnswer+'</strong>. ':''}<span class="explain">${explain}</span></div>`;
+  }
+}
+
+// ============ NAV ============
+function startQuiz(){
+  state={screen:'quiz',current:0,score:0,streak:0,maxStreak:0,answered:false,order:buildOrder(),totalQ:questions.length};
+  render();
+}
+function restartQuiz(){startQuiz();}
+function nextQuestion(){
+  state.current++;
+  state.answered=false;
+  if(state.current>=state.totalQ){state.screen='end';}
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ============ CONFETTI ============
+function spawnConfetti(){
+  const colors=['#ff6b9d','#c084fc','#60a5fa','#34d399','#fbbf24','#fb923c'];
+  for(let i=0;i<40;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.cssText=`left:${Math.random()*100}vw;width:${8+Math.random()*10}px;height:${8+Math.random()*10}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${2+Math.random()*2}s;animation-delay:${Math.random()*.5}s`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4500);
+  }
+}
+function spawnMiniConfetti(){
+  const colors=['#c084fc','#fbbf24','#f472b6','#34d399'];
+  for(let i=0;i<12;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.cssText=`left:${30+Math.random()*40}vw;width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:50%;animation-duration:${1.5+Math.random()*1}s;animation-delay:${Math.random()*.2}s`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3000);
+  }
+}
+
+// ============ BACKGROUND STARS ============
+function makeStars(){
+  const bg=document.getElementById('starsBg');
+  for(let i=0;i<25;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;opacity:${.2+Math.random()*.5}`;
+    bg.appendChild(s);
+  }
+}
+makeStars();
+render();
+</script>
+</body>
+</html>
