@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ Math Star Academy ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--pink:#ff6b9d;--purple:#c084fc;--blue:#60a5fa;--mint:#34d399;--yellow:#fbbf24;--orange:#fb923c;--coral:#f87171;--indigo:#818cf8;--text:#4a1942}
+body{font-family:'Fredoka',sans-serif;background:linear-gradient(135deg,#fdf2f8 0%,#fae8ff 50%,#e0f2fe 100%);min-height:100vh;color:var(--text);overflow-x:hidden}
+.stars-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.star{position:absolute;width:8px;height:8px;background:var(--yellow);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);animation:twinkle 2s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.app{max-width:720px;margin:0 auto;padding:16px;position:relative;z-index:1}
+.header{text-align:center;padding:14px 0}
+.header h1{font-family:'Baloo 2',cursive;font-size:2em;background:linear-gradient(135deg,var(--pink),var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:titleBounce 3s ease-in-out infinite}
+@keyframes titleBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.header .subtitle{font-size:.95em;color:var(--purple);margin-top:2px;font-weight:500}
+.score-bar{display:flex;justify-content:space-between;align-items:center;background:white;border-radius:20px;padding:10px 16px;box-shadow:0 4px 15px rgba(192,132,252,.2);margin-bottom:16px;border:2px solid var(--purple);flex-wrap:wrap;gap:6px}
+.score-item{display:flex;align-items:center;gap:5px;font-weight:600;font-size:.9em}
+.score-item .emoji{font-size:1.2em}
+.progress-wrap{flex:1;min-width:80px;margin:0 8px}
+.progress-bar{height:11px;background:#f0e6ff;border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;border-radius:10px;transition:width .5s ease;background:linear-gradient(90deg,var(--pink),var(--purple),var(--blue))}
+.category-badge{display:inline-block;padding:5px 14px;border-radius:18px;font-size:.82em;font-weight:600;color:white;margin-bottom:10px;animation:slideIn .4s ease}
+.cat-geometry{background:linear-gradient(135deg,var(--blue),var(--purple))}
+.cat-operations{background:linear-gradient(135deg,var(--orange),var(--coral))}
+.cat-fractions{background:linear-gradient(135deg,var(--mint),var(--blue))}
+.cat-measurement{background:linear-gradient(135deg,var(--yellow),var(--orange))}
+.cat-patterns{background:linear-gradient(135deg,var(--pink),var(--purple))}
+.cat-data{background:linear-gradient(135deg,var(--purple),var(--pink))}
+.cat-decimals{background:linear-gradient(135deg,var(--indigo),var(--blue))}
+.cat-volume{background:linear-gradient(135deg,var(--mint),var(--yellow))}
+.cat-coordinates{background:linear-gradient(135deg,var(--coral),var(--orange))}
+.question-card{background:white;border-radius:22px;padding:24px;box-shadow:0 8px 30px rgba(192,132,252,.15);border:3px solid transparent;background-image:linear-gradient(white,white),linear-gradient(135deg,var(--pink),var(--purple),var(--blue));background-origin:border-box;background-clip:padding-box,border-box;animation:cardPop .4s ease}
+@keyframes cardPop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes slideIn{0%{transform:translateX(-20px);opacity:0}100%{transform:translateX(0);opacity:1}}
+.question-num{font-size:.82em;color:var(--purple);font-weight:600;margin-bottom:6px}
+.question-text{font-size:1.1em;font-weight:600;line-height:1.5;margin-bottom:12px}
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.option-btn{padding:12px 14px;border-radius:14px;border:2.5px solid #e9d5ff;background:white;cursor:pointer;font-family:'Fredoka',sans-serif;font-size:.95em;font-weight:500;color:var(--text);transition:all .2s;text-align:center}
+.option-btn:hover{border-color:var(--purple);background:#faf5ff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(192,132,252,.2)}
+.option-btn.correct{border-color:var(--mint);background:#d1fae5;animation:correctPulse .5s ease}
+.option-btn.wrong{border-color:var(--coral);background:#fee2e2;animation:shake .4s ease}
+@keyframes correctPulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.option-btn:disabled{cursor:default}.option-btn:disabled:hover{transform:none;box-shadow:none}
+.input-area{margin-top:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.input-area input{flex:1;min-width:100px;padding:11px 14px;border-radius:13px;border:2.5px solid #e9d5ff;font-family:'Fredoka',sans-serif;font-size:1em;color:var(--text);outline:none;transition:border-color .2s}
+.input-area input:focus{border-color:var(--purple)}
+.submit-btn,.next-btn,.start-btn{font-family:'Fredoka',sans-serif;cursor:pointer;border:none;transition:all .2s}
+.submit-btn{padding:11px 20px;border-radius:13px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:.95em;font-weight:600}
+.submit-btn:hover{transform:translateY(-2px)}
+.feedback{margin-top:14px;padding:12px 16px;border-radius:13px;font-weight:600;font-size:.95em;animation:slideIn .3s ease;display:flex;flex-direction:column;gap:3px}
+.feedback.correct{background:#d1fae5;color:#065f46;border:2px solid var(--mint)}
+.feedback.wrong{background:#fee2e2;color:#991b1b;border:2px solid var(--coral)}
+.feedback .explain{font-weight:400;font-size:.88em}
+.next-btn{display:block;margin:16px auto 0;padding:13px 32px;border-radius:16px;background:linear-gradient(135deg,var(--purple),var(--blue));color:white;font-size:1em;font-weight:700;box-shadow:0 4px 15px rgba(96,165,250,.3)}
+.next-btn:hover{transform:translateY(-3px)}
+.start-screen,.end-screen{text-align:center;padding:30px 16px}
+.start-screen h2{font-family:'Baloo 2',cursive;font-size:1.6em;color:var(--purple);margin-bottom:8px}
+.start-screen p{font-size:1em;color:#7c3aed;margin-bottom:18px;line-height:1.5}
+.start-btn{padding:14px 40px;border-radius:20px;background:linear-gradient(135deg,var(--pink),var(--purple));color:white;font-family:'Baloo 2',cursive;font-size:1.2em;box-shadow:0 6px 20px rgba(192,132,252,.35)}
+.start-btn:hover{transform:translateY(-3px) scale(1.02)}
+.grade-selector{display:flex;gap:12px;justify-content:center;margin:18px 0}
+.grade-card{padding:20px 28px;border-radius:18px;border:3px solid #e9d5ff;background:white;cursor:pointer;text-align:center;transition:all .25s;flex:1;max-width:200px}
+.grade-card:hover,.grade-card.active{border-color:var(--purple);background:#faf5ff;transform:translateY(-3px);box-shadow:0 6px 18px rgba(192,132,252,.25)}
+.grade-card .g-emoji{font-size:2.2em;display:block;margin-bottom:6px}
+.grade-card .g-label{font-weight:700;font-size:1.1em;color:var(--purple)}
+.grade-card .g-sub{font-size:.8em;color:#a78bfa;margin-top:2px}
+.end-screen h2{font-family:'Baloo 2',cursive;font-size:1.8em;margin-bottom:8px}
+.end-score{font-size:2.8em;font-weight:800;margin:12px 0}
+.end-msg{font-size:1.05em;margin-bottom:20px;line-height:1.5}
+.mascot{font-size:2.8em;margin:8px 0;animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.confetti{position:fixed;top:-10px;pointer-events:none;z-index:300;animation:confettiFall 3s linear forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.streak-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:10px;background:linear-gradient(135deg,var(--yellow),var(--orange));color:white;font-size:.82em;font-weight:600;animation:badgePop .3s ease}
+@keyframes badgePop{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.hint-text{font-size:.85em;color:#8b5cf6;font-style:italic;margin-top:6px}
+.results-stars{font-size:2em;margin:10px 0}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;text-align:center}
+.results-stat{background:#faf5ff;border-radius:14px;padding:12px;border:2px solid #e9d5ff}
+.results-stat .stat-val{font-size:1.6em;font-weight:700;color:var(--purple)}
+.results-stat .stat-label{font-size:.78em;color:#7c3aed;margin-top:2px}
+.game-unlock-banner{background:linear-gradient(135deg,var(--yellow),var(--orange));color:white;padding:14px 20px;border-radius:16px;margin:14px 0;font-weight:700;font-size:1.05em;text-align:center;animation:badgePop .5s ease;cursor:pointer}
+.game-unlock-banner:hover{transform:scale(1.02)}
+#gameRoot{position:fixed;top:0;left:0;width:100%;height:100%;z-index:200;display:none;align-items:center;justify-content:center}
+#gameRoot.active{display:flex}
+.game-bg{position:absolute;top:0;left:0;width:100%;height:100%}
+.game-panel{position:relative;width:96%;max-width:520px;z-index:1}
+.game-hud{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(0,0,0,.6);border-radius:16px 16px 0 0;backdrop-filter:blur(8px)}
+.game-hud-item{color:white;font-weight:600;font-size:.92em}
+.game-hud-item.timer{color:var(--yellow);font-size:1em}
+.game-hud-item.score{color:var(--mint);font-size:1em}
+.game-back-btn{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);color:white;padding:7px 16px;border-radius:12px;font-family:'Fredoka',sans-serif;font-size:.85em;font-weight:600;cursor:pointer;transition:all .2s}
+.game-back-btn:hover{background:rgba(255,255,255,.3);transform:scale(1.05)}
+.game-canvas{width:100%;display:block;touch-action:none;border-radius:0 0 0 0}
+.game-instructions{background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:10px 16px;border-radius:0 0 16px 16px;display:flex;align-items:center;justify-content:center;gap:8px;color:rgba(255,255,255,.85);font-size:.82em;font-weight:500;letter-spacing:.3px}
+.game-instructions .gi-icon{font-size:1.2em}
+.game-instructions .gi-sep{color:rgba(255,255,255,.25);margin:0 4px}
+.game-over-panel{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(10,5,30,.93);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:5}
+.game-over-panel h2{font-family:'Baloo 2',cursive;font-size:1.8em;color:var(--yellow)}
+.game-over-panel .go-score{font-size:2.6em;font-weight:800;color:var(--mint)}
+.game-over-panel .go-msg{color:#c4b5fd;font-size:.95em}
+.game-over-panel button{padding:12px 32px;border-radius:14px;background:linear-gradient(135deg,var(--pink),var(--purple));color:white;font-family:'Fredoka',sans-serif;font-size:1em;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.game-over-panel button:hover{transform:scale(1.04)}
+@media(max-width:500px){.header h1{font-size:1.6em}.options-grid{grid-template-columns:1fr}.question-card{padding:18px}.grade-selector{flex-direction:column;align-items:center}.results-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="stars-bg" id="starsBg"></div>
+<div class="app" id="app"></div>
+<div id="gameRoot"><div class="game-bg" id="gameBg"></div><div class="game-panel" id="gamePanel"></div></div>
+
+<script>
+// ===================== QUESTIONS =====================
+const grade4=[
+  {category:"geometry",text:"A square has a perimeter of 48 cm. Side length?",type:"input",answer:"12",answerUnit:"cm",explain:"48 ÷ 4 = 12 cm"},
+  {category:"geometry",text:"Area of rectangle 11 cm × 6 cm?",type:"multi",options:["66 sq cm","34 sq cm","17 sq cm","72 sq cm"],answer:"66 sq cm",explain:"11 × 6 = 66"},
+  {category:"geometry",text:"How many sides does a hexagon have?",type:"multi",options:["6","5","8","7"],answer:"6",explain:"Hex = 6 sides."},
+  {category:"geometry",text:"A 90° angle is called a:",type:"multi",options:["Right angle","Acute angle","Obtuse angle","Straight angle"],answer:"Right angle",explain:"90° = right angle."},
+  {category:"geometry",text:"Perimeter of triangle: sides 7, 9, 5 cm?",type:"input",answer:"21",answerUnit:"cm",explain:"7+9+5 = 21"},
+  {category:"geometry",text:"Rectangle area 56 sq in, width 7 in. Length?",type:"input",answer:"8",answerUnit:"in",explain:"56÷7 = 8"},
+  {category:"geometry",text:"Lines of symmetry in a regular hexagon?",type:"multi",options:["6","3","4","2"],answer:"6",explain:"Regular hexagon → 6 lines of symmetry."},
+  {category:"geometry",text:"Shape with exactly 1 pair of parallel sides?",type:"multi",options:["Trapezoid","Rectangle","Triangle","Pentagon"],answer:"Trapezoid",explain:"Trapezoid = 1 pair parallel sides."},
+  {category:"geometry",text:"Perimeter: rectangle 15 ft × 8 ft?",type:"input",answer:"46",answerUnit:"ft",explain:"2×(15+8) = 46"},
+  {category:"geometry",text:"160° is what type of angle?",type:"multi",options:["Obtuse","Acute","Right","Straight"],answer:"Obtuse",explain:"Between 90°-180° → obtuse."},
+  {category:"geometry",text:"Square area = 81 sq ft. Side?",type:"input",answer:"9",answerUnit:"ft",explain:"9×9=81"},
+  {category:"geometry",text:"Lines that never cross & stay same distance apart?",type:"multi",options:["Parallel","Perpendicular","Intersecting","Diagonal"],answer:"Parallel",explain:"Parallel lines never meet."},
+  {category:"operations",text:"356 × 24 = ?",type:"multi",options:["8,544","8,454","7,544","8,644"],answer:"8,544",explain:"356×20+356×4 = 7120+1424 = 8,544"},
+  {category:"operations",text:"9,003 − 4,567 = ?",type:"input",answer:"4436",explain:"4,436"},
+  {category:"operations",text:"(15 − 7) × 9 = ?",type:"multi",options:["72","78","63","88"],answer:"72",explain:"8×9 = 72"},
+  {category:"operations",text:"4,896 ÷ 8 = ?",type:"input",answer:"612",explain:"612"},
+  {category:"operations",text:"Round 45,678 to nearest thousand.",type:"multi",options:["46,000","45,000","45,700","50,000"],answer:"46,000",explain:"Hundreds=6≥5 → round up"},
+  {category:"operations",text:"125 × 16 = ?",type:"input",answer:"2000",explain:"2,000"},
+  {category:"operations",text:"83 ÷ 9 remainder?",type:"multi",options:["2","3","5","1"],answer:"2",explain:"9×9=81, 83-81=2"},
+  {category:"operations",text:"144 cookies, 12 per box. Boxes?",type:"input",answer:"12",explain:"144÷12=12"},
+  {category:"operations",text:"7 × 8 × 5 = ?",type:"multi",options:["280","275","320","240"],answer:"280",explain:"56×5=280"},
+  {category:"operations",text:"Greater: 3,489 or 3,498?",type:"multi",options:["3,498","3,489","Equal","Cannot tell"],answer:"3,498",explain:"Tens: 9>8"},
+  {category:"fractions",text:"5/6 − 1/6 = ?",type:"multi",options:["4/6","6/6","5/12","1/3"],answer:"4/6",explain:"(5-1)/6 = 4/6"},
+  {category:"fractions",text:"2⅓ as improper fraction?",type:"multi",options:["7/3","5/3","8/3","3/3"],answer:"7/3",explain:"2×3+1=7 → 7/3"},
+  {category:"fractions",text:"4 × 3/8 = ?",type:"multi",options:["12/8","12/32","3/32","4/8"],answer:"12/8",explain:"4×3=12 → 12/8"},
+  {category:"fractions",text:"Fraction equal to 6/8?",type:"multi",options:["3/4","2/3","6/4","5/8"],answer:"3/4",explain:"÷2 → 3/4"},
+  {category:"fractions",text:"1/4 + 2/8 = ?",type:"multi",options:["1/2","3/12","3/8","2/4"],answer:"1/2",explain:"2/8+2/8=4/8=1/2"},
+  {category:"fractions",text:"2/5 ☐ 3/10?",type:"multi",options:[">","<","=","None"],answer:">",explain:"2/5=4/10 > 3/10"},
+  {category:"fractions",text:"0.5 as simplest fraction?",type:"multi",options:["1/2","5/10","50/100","5/1"],answer:"1/2",explain:"1/2"},
+  {category:"fractions",text:"Simplify 9/12.",type:"multi",options:["3/4","2/3","9/12","4/6"],answer:"3/4",explain:"÷3 → 3/4"},
+  {category:"fractions",text:"2/3 + 1/6 = ?",type:"multi",options:["5/6","3/9","1/2","3/6"],answer:"5/6",explain:"4/6+1/6=5/6"},
+  {category:"fractions",text:"Order: 3/5, 1/2, 7/10 (least→greatest)",type:"multi",options:["1/2, 3/5, 7/10","3/5, 1/2, 7/10","7/10, 3/5, 1/2","1/2, 7/10, 3/5"],answer:"1/2, 3/5, 7/10",explain:"5/10<6/10<7/10"},
+  {category:"measurement",text:"Inches in 4 feet?",type:"input",answer:"48",answerUnit:"in",explain:"4×12=48"},
+  {category:"measurement",text:"10:20 AM + 2h 35min = ?",type:"multi",options:["12:55 PM","1:05 PM","12:45 PM","12:35 PM"],answer:"12:55 PM",explain:"+2h→12:20, +35m→12:55"},
+  {category:"measurement",text:"Cups in 3 quarts? (1qt=4cups)",type:"input",answer:"12",answerUnit:"cups",explain:"3×4=12"},
+  {category:"measurement",text:"5,000 grams = ? kg",type:"input",answer:"5",answerUnit:"kg",explain:"÷1000=5"},
+  {category:"measurement",text:"Perimeter: 10m × 7m room?",type:"input",answer:"34",answerUnit:"m",explain:"2×17=34"},
+  {category:"measurement",text:"Heavier: 3kg or 2,500g?",type:"multi",options:["3 kg","2,500 g","Equal","Cannot compare"],answer:"3 kg",explain:"3000g>2500g"},
+  {category:"measurement",text:"Seconds in 5 minutes?",type:"input",answer:"300",answerUnit:"sec",explain:"5×60=300"},
+  {category:"patterns",text:"Next: 4, 11, 18, 25, __",type:"input",answer:"32",explain:"+7 → 32"},
+  {category:"patterns",text:"☐ × 8 = 96",type:"input",answer:"12",explain:"96÷8=12"},
+  {category:"patterns",text:"n − 18 = 25. n=?",type:"input",answer:"43",explain:"25+18=43"},
+  {category:"patterns",text:"Rule: 2, 6, 18, 54…",type:"multi",options:["×3","+ 4","×2","+12"],answer:"×3",explain:"Multiply by 3"},
+  {category:"patterns",text:"Which = 50?",type:"multi",options:["5×(6+4)","5×6+4","Both","Neither"],answer:"5×(6+4)",explain:"5×10=50. 5×6+4=34"},
+  {category:"data",text:"Mean of 14,18,10,22,16?",type:"input",answer:"16",explain:"80÷5=16"},
+  {category:"data",text:"8 soccer, 12 basketball, 5 both. Only basketball?",type:"input",answer:"7",explain:"12-5=7"},
+  {category:"data",text:"Each 🌟=3 pts. 5 stars = ?",type:"input",answer:"15",explain:"5×3=15"},
+  {category:"data",text:"Scores 85,90,75,95,80. Range?",type:"input",answer:"20",explain:"95-75=20"},
+  {category:"data",text:"Sizes 5,6,5,7,5,6,8,5. Mode?",type:"multi",options:["5","6","7","8"],answer:"5",explain:"5 appears 4 times"},
+  {category:"data",text:"Pizza=14, Burgers=9. How many more pizza?",type:"input",answer:"5",explain:"14-9=5"},
+];
+const grade5=[
+  {category:"geometry",text:"Volume: 5×3×4 rectangular prism?",type:"input",answer:"60",answerUnit:"cubic units",explain:"5×3×4=60"},
+  {category:"geometry",text:"Triangle area: base 10, height 6?",type:"input",answer:"30",answerUnit:"sq cm",explain:"½×10×6=30"},
+  {category:"geometry",text:"Faces on a rectangular prism?",type:"multi",options:["6","4","8","5"],answer:"6",explain:"6 faces"},
+  {category:"geometry",text:"Volume of cube, side 7?",type:"input",answer:"343",answerUnit:"cubic cm",explain:"7³=343"},
+  {category:"geometry",text:"4 right angles + 4 equal sides = ?",type:"multi",options:["Square","Rectangle","Rhombus","Trapezoid"],answer:"Square",explain:"Square"},
+  {category:"geometry",text:"Edges on a cube?",type:"multi",options:["12","8","6","10"],answer:"12",explain:"12 edges"},
+  {category:"geometry",text:"Regular pentagon, sides 9cm. Perimeter?",type:"input",answer:"45",answerUnit:"cm",explain:"5×9=45"},
+  {category:"geometry",text:"Box 10×4×3 in. Volume?",type:"input",answer:"120",answerUnit:"cubic in",explain:"120"},
+  {category:"geometry",text:"Sides 5,5,8. Triangle type?",type:"multi",options:["Isosceles","Equilateral","Scalene","Right"],answer:"Isosceles",explain:"2 equal sides"},
+  {category:"geometry",text:"Vertices of triangular prism?",type:"multi",options:["6","5","8","9"],answer:"6",explain:"3 per face = 6"},
+  {category:"decimals",text:"3.45 + 2.78?",type:"input",answer:"6.23",explain:"6.23"},
+  {category:"decimals",text:"8.5 − 3.27?",type:"input",answer:"5.23",explain:"5.23"},
+  {category:"decimals",text:"0.6 × 0.4?",type:"multi",options:["0.24","2.4","0.024","24"],answer:"0.24",explain:"24 with 2 decimals → 0.24"},
+  {category:"decimals",text:"Order: 0.45, 0.405, 0.5 (least→greatest)",type:"multi",options:["0.405, 0.45, 0.5","0.45, 0.405, 0.5","0.5, 0.45, 0.405","0.405, 0.5, 0.45"],answer:"0.405, 0.45, 0.5",explain:"0.405<0.45<0.5"},
+  {category:"decimals",text:"12.6 ÷ 3?",type:"input",answer:"4.2",explain:"4.2"},
+  {category:"decimals",text:"Round 7.849 to nearest tenth.",type:"multi",options:["7.8","7.9","7.85","8.0"],answer:"7.8",explain:"Hundredths=4<5 → 7.8"},
+  {category:"decimals",text:"2.5 × 1.2?",type:"input",answer:"3",explain:"3.00=3"},
+  {category:"decimals",text:"3/8 as decimal?",type:"multi",options:["0.375","0.38","0.35","0.3"],answer:"0.375",explain:"3÷8=0.375"},
+  {category:"fractions",text:"2/3 + 3/4?",type:"multi",options:["17/12","5/7","5/12","6/7"],answer:"17/12",explain:"8/12+9/12=17/12"},
+  {category:"fractions",text:"5/6 − 1/4?",type:"multi",options:["7/12","4/2","1/3","1/2"],answer:"7/12",explain:"10/12-3/12=7/12"},
+  {category:"fractions",text:"3/5 × 2/7?",type:"multi",options:["6/35","5/12","6/12","3/7"],answer:"6/35",explain:"6/35"},
+  {category:"fractions",text:"4/5 ÷ 2/3?",type:"multi",options:["6/5","8/15","12/10","2/5"],answer:"6/5",explain:"4/5×3/2=12/10=6/5"},
+  {category:"fractions",text:"1/2 + 1/3 + 1/6?",type:"multi",options:["1","5/6","2/3","7/6"],answer:"1",explain:"3/6+2/6+1/6=1"},
+  {category:"fractions",text:"Simplify 15/25.",type:"multi",options:["3/5","5/8","2/5","1/5"],answer:"3/5",explain:"÷5 → 3/5"},
+  {category:"fractions",text:"2½ × 3?",type:"multi",options:["7 1/2","6 1/2","5 1/2","8"],answer:"7 1/2",explain:"5/2×3=15/2=7½"},
+  {category:"fractions",text:"3¼ − 1⅔?",type:"multi",options:["1 7/12","2 1/4","1 1/2","2 7/12"],answer:"1 7/12",explain:"39/12-20/12=19/12=1 7/12"},
+  {category:"fractions",text:"7/8 × 4?",type:"multi",options:["7/2","28/32","7/4","7/32"],answer:"7/2",explain:"28/8=7/2"},
+  {category:"operations",text:"3² + 4²?",type:"input",answer:"25",explain:"9+16=25"},
+  {category:"operations",text:"2×(8+3)−5?",type:"multi",options:["17","19","21","16"],answer:"17",explain:"22-5=17"},
+  {category:"operations",text:"10³?",type:"input",answer:"1000",explain:"1,000"},
+  {category:"operations",text:"48 ÷ (2×4)?",type:"multi",options:["6","12","96","24"],answer:"6",explain:"48÷8=6"},
+  {category:"operations",text:"60,000+3,000+400+7?",type:"input",answer:"63407",explain:"63,407"},
+  {category:"operations",text:"2.5 × 10²?",type:"input",answer:"250",explain:"250"},
+  {category:"operations",text:"1,248 ÷ 12?",type:"input",answer:"104",explain:"104"},
+  {category:"operations",text:"15% of 200?",type:"input",answer:"30",explain:"0.15×200=30"},
+  {category:"volume",text:"Tank 20×10×12 in. Volume?",type:"input",answer:"2400",answerUnit:"cubic in",explain:"2,400"},
+  {category:"measurement",text:"3.5 km = ? meters",type:"input",answer:"3500",answerUnit:"m",explain:"3,500"},
+  {category:"measurement",text:"Fluid oz in 2 cups? (1cup=8)",type:"input",answer:"16",answerUnit:"fl oz",explain:"16"},
+  {category:"volume",text:"Cube volume=125. Side?",type:"input",answer:"5",answerUnit:"cm",explain:"5³=125"},
+  {category:"measurement",text:"2.5 L = ? mL",type:"input",answer:"2500",answerUnit:"mL",explain:"2,500"},
+  {category:"measurement",text:"Yards in 1 mile? (5280ft, 1yd=3ft)",type:"multi",options:["1,760","1,580","5,280","880"],answer:"1,760",explain:"5280÷3=1760"},
+  {category:"coordinates",text:"3 right, 5 up from origin?",type:"multi",options:["(3, 5)","(5, 3)","(3, −5)","(−3, 5)"],answer:"(3, 5)",explain:"(3,5)"},
+  {category:"coordinates",text:"A(2,4) to B(6,4) distance?",type:"input",answer:"4",answerUnit:"units",explain:"|6-2|=4"},
+  {category:"coordinates",text:"(−3,4) quadrant?",type:"multi",options:["II","I","III","IV"],answer:"II",explain:"-x,+y = QII"},
+  {category:"coordinates",text:"(1,2)+4 right+3 up?",type:"multi",options:["(5, 5)","(4, 3)","(5, 2)","(1, 5)"],answer:"(5, 5)",explain:"(5,5)"},
+  {category:"data",text:"Mean of 72,88,95,80,85?",type:"input",answer:"84",explain:"420÷5=84"},
+  {category:"patterns",text:"Next: 1,4,9,16,25,__",type:"input",answer:"36",explain:"6²=36"},
+  {category:"data",text:"Data 3,5,7,7,8,10. Median?",type:"multi",options:["7","7.5","6","8"],answer:"7",explain:"Middle=7,7 → 7"},
+  {category:"patterns",text:"f(n)=3n+2. f(7)?",type:"input",answer:"23",explain:"21+2=23"},
+  {category:"data",text:"3red,5blue,2green. P(blue)?",type:"multi",options:["1/2","5/10","1/5","3/10"],answer:"1/2",explain:"5/10=1/2"},
+];
+
+// ===================== STATE =====================
+let S={screen:'start',grade:4,questions:[],order:[],current:0,score:0,streak:0,maxStreak:0,answered:false,fromEnd:false,gameIndex:0};
+let G={running:false,timerId:null,timeLeft:0,type:0,animId:0,cleanup:null};
+function shuffle(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function buildOrder(qs){let g=[],o=[];qs.forEach((_,i)=>{if(qs[i].category==='geometry')g.push(i);else o.push(i)});return[...shuffle(g),...shuffle(o)]}
+const app=document.getElementById('app');
+const gameRoot=document.getElementById('gameRoot');
+
+function render(){if(S.screen==='start')renderStart();else if(S.screen==='quiz')renderQuestion();else if(S.screen==='end')renderEnd()}
+
+function renderStart(){
+  app.innerHTML=`<div class="header"><h1>✨ Math Star Academy ✨</h1><div class="subtitle">Illinois IAR Practice</div></div>
+  <div class="start-screen"><div class="mascot">🦄</div><h2>Choose Your Grade!</h2>
+  <p>50 questions • mini-games every 5 in a row! 🎮<br>Finish for a 5-minute bonus game!</p>
+  <div class="grade-selector">
+    <div class="grade-card ${S.grade===4?'active':''}" onclick="pickGrade(4)"><span class="g-emoji">🌟</span><span class="g-label">Grade 4</span><span class="g-sub">Shapes, Fractions & More</span></div>
+    <div class="grade-card ${S.grade===5?'active':''}" onclick="pickGrade(5)"><span class="g-emoji">🚀</span><span class="g-label">Grade 5</span><span class="g-sub">Volume, Decimals & More</span></div>
+  </div>
+  <button class="start-btn" onclick="startQuiz()">Let's Go! 🎉</button></div>`;
+}
+function pickGrade(g){S.grade=g;render()}
+function startQuiz(){S.questions=S.grade===4?grade4:grade5;S.order=buildOrder(S.questions);S.current=0;S.score=0;S.streak=0;S.maxStreak=0;S.answered=false;S.screen='quiz';S.fromEnd=false;S.gameIndex=0;render()}
+function catClass(c){return'cat-'+(c||'geometry')}
+function catLabel(c){return{geometry:'📐 Geometry',operations:'✖️ Operations',fractions:'🍕 Fractions',measurement:'📏 Measurement',patterns:'🔢 Patterns',data:'📊 Data',decimals:'🔢 Decimals',volume:'📦 Volume',coordinates:'📍 Coordinates'}[c]||c}
+
+function renderQuestion(){
+  const q=S.questions[S.order[S.current]],total=S.questions.length,pct=S.current/total*100;
+  let optHTML='';
+  if(q.type==='multi'){optHTML=`<div class="options-grid">${q.options.map((o,i)=>`<button class="option-btn" id="opt${i}" onclick="checkMulti(${i})" ${S.answered?'disabled':''}>${o}</button>`).join('')}</div>`}
+  else{optHTML=`<div class="input-area"><input type="text" id="ansInput" placeholder="Type answer…" ${S.answered?'disabled':''} onkeydown="if(event.key==='Enter')checkInput()"/><button class="submit-btn" onclick="checkInput()" ${S.answered?'disabled':''}>Check ✓</button></div>`;if(q.answerUnit)optHTML+=`<div class="hint-text">Number only (${q.answerUnit})</div>`}
+  app.innerHTML=`<div class="header"><h1>✨ Math Star Academy ✨</h1><div class="subtitle">Grade ${S.grade} • Illinois IAR</div></div>
+  <div class="score-bar"><div class="score-item"><span class="emoji">⭐</span>${S.score}</div><div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div><div class="score-item">${S.streak>=2?`<span class="streak-badge">🔥 ${S.streak}</span>`:''} ${S.current+1}/${total}</div></div>
+  <div class="question-card"><span class="category-badge ${catClass(q.category)}">${catLabel(q.category)}</span><div class="question-num">Question ${S.current+1} of ${total}</div><div class="question-text">${q.text}</div>${optHTML}<div id="feedback"></div><div id="afterFeedback"></div></div>`;
+  if(!S.answered&&q.type==='input')setTimeout(()=>{const el=document.getElementById('ansInput');if(el)el.focus()},100);
+}
+function norm(s){return String(s).trim().replace(/,/g,'').replace(/\s+/g,' ').toLowerCase()}
+function checkMulti(i){if(S.answered)return;S.answered=true;const q=S.questions[S.order[S.current]],correct=norm(q.options[i])===norm(q.answer);if(correct){S.score++;S.streak++;if(S.streak>S.maxStreak)S.maxStreak=S.streak}else S.streak=0;q.options.forEach((o,j)=>{const b=document.getElementById('opt'+j);if(norm(o)===norm(q.answer))b.classList.add('correct');else if(j===i)b.classList.add('wrong');b.disabled=true});showFB(correct,q.explain,q.answer);if(correct)spawnMiniConfetti()}
+function checkInput(){if(S.answered)return;const inp=document.getElementById('ansInput');if(!inp)return;const val=norm(inp.value);if(!val){inp.style.borderColor='var(--coral)';return}S.answered=true;const q=S.questions[S.order[S.current]],correct=val===norm(q.answer);if(correct){S.score++;S.streak++;if(S.streak>S.maxStreak)S.maxStreak=S.streak}else S.streak=0;inp.disabled=true;inp.style.borderColor=correct?'var(--mint)':'var(--coral)';inp.style.background=correct?'#d1fae5':'#fee2e2';showFB(correct,q.explain,q.answer+(q.answerUnit?' '+q.answerUnit:''));if(correct)spawnMiniConfetti()}
+function showFB(ok,explain,ans){
+  const fb=document.getElementById('feedback'),af=document.getElementById('afterFeedback');
+  if(ok){const m=['You got it! 🎉','Amazing! 🌟','Correct! ⭐','Way to go! 💖','Brilliant! 🦄','Nailed it! 🎯'];fb.innerHTML=`<div class="feedback correct">${m[Math.floor(Math.random()*m.length)]}<span class="explain">${explain}</span></div>`}
+  else fb.innerHTML=`<div class="feedback wrong">Not quite! Answer: <strong>${ans}</strong><span class="explain">${explain}</span></div>`;
+  if(ok&&S.streak>0&&S.streak%5===0&&S.current<S.questions.length-1)af.innerHTML=`<div class="game-unlock-banner" onclick="launchMini()">🎮 ${S.streak} in a row! Play a 1-min game! 🎮</div><button class="next-btn" style="background:#9ca3af;font-size:.85em;padding:10px 20px;margin-top:6px" onclick="nextQ()">Skip ➜</button>`;
+  else af.innerHTML=`<button class="next-btn" onclick="nextQ()">${S.current>=S.questions.length-1?'See Results 🏆':'Next Question ➜'}</button>`;
+}
+function nextQ(){S.current++;S.answered=false;if(S.current>=S.questions.length){S.screen='end';render();window.scrollTo({top:0,behavior:'smooth'});return}render();window.scrollTo({top:0,behavior:'smooth'})}
+
+function renderEnd(){
+  const t=S.questions.length,pct=Math.round(S.score/t*100);let emoji='🎉',msg='',stars='';
+  if(pct>=90){emoji='👑';msg="You're a Math Queen!";stars='⭐⭐⭐⭐⭐'}else if(pct>=75){emoji='🌟';msg="Amazing, Math Star!";stars='⭐⭐⭐⭐'}else if(pct>=60){emoji='💪';msg="Great work!";stars='⭐⭐⭐'}else if(pct>=40){emoji='🌈';msg="Good effort!";stars='⭐⭐'}else{emoji='💖';msg="Keep trying!";stars='⭐'}
+  spawnConfetti();
+  app.innerHTML=`<div class="header"><h1>✨ Math Star Academy ✨</h1></div><div class="end-screen"><div class="mascot">${emoji}</div><h2>Quiz Complete!</h2><div class="results-stars">${stars}</div>
+  <div class="end-score" style="background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${pct}%</div>
+  <div class="results-grid"><div class="results-stat"><div class="stat-val">${S.score}</div><div class="stat-label">Correct</div></div><div class="results-stat"><div class="stat-val">${t-S.score}</div><div class="stat-label">Missed</div></div><div class="results-stat"><div class="stat-val">🔥 ${S.maxStreak}</div><div class="stat-label">Best Streak</div></div></div>
+  <div class="end-msg">${msg}</div><div class="game-unlock-banner" onclick="launchFinal()">🎮 Play 5-Minute Bonus Game! 🎮</div>
+  <button class="start-btn" style="margin-top:14px" onclick="S.screen='start';render()">Play Again 🔄</button></div>`;
+}
+
+// ===================== GAME SYSTEM =====================
+function launchMini(){S.fromEnd=false;G.type=S.gameIndex%4;S.gameIndex++;launchGame(60)}
+function launchFinal(){S.fromEnd=true;G.type=Math.floor(Math.random()*4);launchGame(300)}
+function launchGame(secs){
+  G.timeLeft=secs;G.running=true;
+  gameRoot.classList.add('active');
+  startGameEngine(G.type);
+}
+function stopGame(){
+  G.running=false;clearInterval(G.timerId);G.timerId=null;cancelAnimationFrame(G.animId);
+  if(G.cleanup)G.cleanup();G.cleanup=null;
+  gameRoot.classList.remove('active');gameRoot.querySelector('#gamePanel').innerHTML='';
+  if(S.fromEnd||S.current>=S.questions.length){S.screen='end';render()}
+  else{S.screen='quiz';nextQ()}
+}
+function fmtTime(s){const m=Math.floor(s/60),ss=s%60;return m+':'+(ss<10?'0':'')+ss}
+
+function startGameEngine(type){
+  const themes=[
+    {name:'🧜‍♀️ Mermaid Pearl Dive',bg:'linear-gradient(180deg,#1e6091,#168aad,#0a2463)',instr:'👆 Tap the pearls and shells as they sink through the ocean!'},
+    {name:'🦋 Butterfly Garden',bg:'linear-gradient(180deg,#87CEEB,#98d8c8,#2d6a4f)',instr:'👆 Tap the butterflies before they flutter away!'},
+    {name:'🚀 Galaxy Runner',bg:'linear-gradient(180deg,#0b0033,#1a0044,#2d006b)',instr:'☝️ Touch and drag to steer your ship. Dodge the asteroids!'},
+    {name:'🦄 Unicorn Jump',bg:'linear-gradient(180deg,#fce4ec,#e1bee7,#ce93d8)',instr:'👆 Tap anywhere to jump! Land on platforms and collect coins!'}
+  ];
+  const t=themes[type];
+  document.getElementById('gameBg').style.background=t.bg;
+  const panel=document.getElementById('gamePanel');
+  panel.innerHTML=`<div class="game-hud">
+    <button class="game-back-btn" onclick="stopGame()">✕ Back to Math</button>
+    <div class="game-hud-item timer" id="gTimer">⏱ ${fmtTime(G.timeLeft)}</div>
+    <div class="game-hud-item score" id="gScore">✦ 0</div>
+  </div>
+  <canvas id="gCanvas" class="game-canvas" width="500" height="400"></canvas>
+  <div class="game-instructions"><span class="gi-icon">🎮</span> ${t.instr}</div>`;
+  const canvas=document.getElementById('gCanvas');
+  const ctx=canvas.getContext('2d');const W=500,H=400;
+  let gs=0,frame=0;
+  const timerEl=document.getElementById('gTimer'),scoreEl=document.getElementById('gScore');
+
+  G.timerId=setInterval(()=>{
+    if(!G.running)return;G.timeLeft--;if(timerEl)timerEl.textContent='⏱ '+fmtTime(G.timeLeft);
+    if(G.timeLeft<=0){G.running=false;clearInterval(G.timerId);G.timerId=null;showGameOver()}
+  },1000);
+
+  function showGameOver(){
+    const div=document.createElement('div');div.className='game-over-panel';
+    div.innerHTML=`<h2>⏱ Time's Up!</h2><div class="go-score">${gs} pts</div><div class="go-msg">${gs>30?'Incredible! 👑':gs>15?'Great job! 🌟':'Nice try! 💖'}</div><button onclick="stopGame()">Back to Math ➜</button>`;
+    panel.appendChild(div);
+  }
+
+  function getPos(e){const r=canvas.getBoundingClientRect();const ev=e.touches?e.touches[0]:e;return{x:(ev.clientX-r.left)*(W/r.width),y:(ev.clientY-r.top)*(H/r.height)}}
+
+  // Shared cleanup
+  const listeners=[];
+  function on(evt,fn){
+    if(evt==='keydown'){document.addEventListener('keydown',fn);listeners.push({el:document,evt,fn})}
+    else{const opts=evt.startsWith('touch')?{passive:false}:undefined;canvas.addEventListener(evt,fn,opts);listeners.push({el:canvas,evt,fn})}
+  }
+  G.cleanup=()=>{listeners.forEach(l=>{l.el.removeEventListener(l.evt,l.fn)});listeners.length=0};
+
+  function loop(fn){
+    function tick(){if(!G.running){return}fn();G.animId=requestAnimationFrame(tick)}
+    tick();
+  }
+
+  if(type===0)game_mermaid();
+  else if(type===1)game_butterfly();
+  else if(type===2)game_galaxy();
+  else game_unicorn();
+
+  // ======== GAME 0: MERMAID PEARL DIVE ========
+  function game_mermaid(){
+    const pearls=[];const bubbles=[];const sparkles=[];
+    for(let i=0;i<40;i++)bubbles.push({x:Math.random()*W,y:Math.random()*H,r:1.5+Math.random()*4,sp:.2+Math.random()*.6});
+    let spawnT=0;
+    function tap(e){e.preventDefault();if(!G.running)return;const p=getPos(e);
+      for(let i=pearls.length-1;i>=0;i--){const pl=pearls[i];if(pl.alive&&Math.hypot(p.x-pl.x,p.y-pl.y)<pl.r+16){pl.alive=false;gs++;scoreEl.textContent='✦ '+gs;for(let j=0;j<6;j++)sparkles.push({x:pl.x,y:pl.y,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4,life:20,c:pl.c});break}}}
+    on('click',tap);on('touchstart',tap);
+    loop(()=>{
+      frame++;spawnT++;
+      if(spawnT>25){spawnT=0;const colors=['#fff1f2','#fce7f3','#e0f2fe','#d1fae5','#fef9c3','#fbbf24'];pearls.push({x:Math.random()*(W-40)+20,y:-20,r:12+Math.random()*14,c:colors[Math.floor(Math.random()*colors.length)],sp:1.2+Math.random()*2.5,alive:true,g:Math.random()*6.28,shell:Math.random()>.5})}
+      // Draw ocean
+      const grd=ctx.createLinearGradient(0,0,0,H);grd.addColorStop(0,'#1e6091');grd.addColorStop(.5,'#168aad');grd.addColorStop(1,'#0a2463');ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+      // Light rays
+      ctx.save();ctx.globalAlpha=.05;for(let i=0;i<6;i++){const x=60+i*85+Math.sin(frame/120+i)*25;ctx.fillStyle='#89c2d9';ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x-40,H);ctx.lineTo(x+40,H);ctx.closePath();ctx.fill()}ctx.restore();
+      // Bubbles
+      bubbles.forEach(b=>{b.y-=b.sp;if(b.y<-5)b.y=H+5;b.x+=Math.sin(frame/40+b.r)*.3;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.28);ctx.fillStyle=`rgba(173,216,230,${.15+b.r*.04})`;ctx.fill()});
+      // Seaweed
+      ctx.lineWidth=5;for(let i=0;i<7;i++){const bx=25+i*72;ctx.strokeStyle=`rgba(34,139,34,${.35+i*.03})`;ctx.beginPath();ctx.moveTo(bx,H);for(let y=H;y>H-50-Math.sin(frame/50+i)*20;y-=4)ctx.lineTo(bx+Math.sin((H-y)/12+frame/25+i)*14,y);ctx.stroke()}
+      // Sandy floor
+      ctx.fillStyle='#c2b280';ctx.fillRect(0,H-15,W,15);ctx.fillStyle='#b8a974';for(let i=0;i<W;i+=20)ctx.fillRect(i,H-15+Math.sin(i)*3,12,3);
+      // Shells on floor
+      ctx.fillStyle='#fce4ec';ctx.beginPath();ctx.arc(70,H-10,6,Math.PI,0);ctx.fill();ctx.fillStyle='#e8daef';ctx.beginPath();ctx.arc(350,H-8,5,Math.PI,0);ctx.fill();
+      // Pearls
+      pearls.forEach(pl=>{if(!pl.alive)return;pl.y+=pl.sp;pl.g+=.07;if(pl.y>H+30){pl.alive=false;return}
+        if(pl.shell){ctx.fillStyle='#f8bbd0';ctx.beginPath();ctx.arc(pl.x,pl.y,pl.r,Math.PI,0);ctx.fill();ctx.fillStyle='#fce4ec';ctx.beginPath();ctx.arc(pl.x,pl.y,pl.r*.8,0,Math.PI);ctx.fill();ctx.fillStyle=pl.c;ctx.beginPath();ctx.arc(pl.x,pl.y-2,pl.r*.35,0,6.28);ctx.fill()}
+        else{const pg=ctx.createRadialGradient(pl.x-pl.r*.25,pl.y-pl.r*.25,pl.r*.1,pl.x,pl.y,pl.r);pg.addColorStop(0,'white');pg.addColorStop(.6,pl.c);pg.addColorStop(1,'rgba(150,180,255,.3)');ctx.fillStyle=pg;ctx.beginPath();ctx.arc(pl.x,pl.y,pl.r,0,6.28);ctx.fill()}
+        // Sparkle
+        ctx.fillStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.arc(pl.x+Math.cos(pl.g)*pl.r*.5,pl.y+Math.sin(pl.g)*pl.r*.5,2,0,6.28);ctx.fill()});
+      // Sparkle particles
+      for(let i=sparkles.length-1;i>=0;i--){const s=sparkles[i];s.x+=s.vx;s.y+=s.vy;s.life--;if(s.life<=0){sparkles.splice(i,1);continue}ctx.globalAlpha=s.life/20;ctx.fillStyle=s.c;ctx.beginPath();ctx.arc(s.x,s.y,3,0,6.28);ctx.fill()}ctx.globalAlpha=1;
+    });
+  }
+
+  // ======== GAME 1: BUTTERFLY GARDEN ========
+  function game_butterfly(){
+    const bfs=[];const flowers=[];const petals=[];
+    const bfC=[['#ff6b9d','#ff9bc1'],['#c084fc','#d8b4fe'],['#60a5fa','#93c5fd'],['#fbbf24','#fcd34d'],['#fb923c','#fdba74'],['#34d399','#6ee7b7']];
+    for(let i=0;i<14;i++)flowers.push({x:15+Math.random()*(W-30),y:H-12-Math.random()*25,r:7+Math.random()*5,c:['#ec4899','#f472b6','#a855f7','#f59e0b','#ef4444'][i%5]});
+    let spawnT=0;
+    function tap(e){e.preventDefault();if(!G.running)return;const p=getPos(e);
+      for(let i=bfs.length-1;i>=0;i--){const b=bfs[i];if(b.alive&&Math.hypot(p.x-b.x,p.y-b.y)<b.sz+18){b.alive=false;gs++;scoreEl.textContent='✦ '+gs;for(let j=0;j<5;j++)petals.push({x:b.x,y:b.y,vx:(Math.random()-.5)*3,vy:-1-Math.random()*2,life:25,c:b.c[0]});break}}}
+    on('click',tap);on('touchstart',tap);
+    loop(()=>{
+      frame++;spawnT++;
+      if(spawnT>35){spawnT=0;const c=bfC[Math.floor(Math.random()*bfC.length)];bfs.push({x:Math.random()>.5?-20:W+20,y:40+Math.random()*(H-120),c,alive:true,vx:(Math.random()-.5)*2.5,vy:(Math.random()-.5)*1.5,wing:Math.random()*6.28,sz:14+Math.random()*10})}
+      // Sky
+      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#87CEEB');sky.addColorStop(.55,'#b2dfdb');sky.addColorStop(1,'#2d6a4f');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+      // Sun
+      ctx.fillStyle='rgba(255,223,100,.2)';ctx.beginPath();ctx.arc(W-55,48,45,0,6.28);ctx.fill();ctx.fillStyle='#ffe066';ctx.beginPath();ctx.arc(W-55,48,20,0,6.28);ctx.fill();
+      // Clouds
+      drawCloud(80+Math.sin(frame/200)*20,55,35);drawCloud(300+Math.cos(frame/170)*18,40,28);drawCloud(200+Math.sin(frame/250)*12,70,22);
+      // Hills
+      ctx.fillStyle='#52b788';ctx.beginPath();ctx.moveTo(0,H-40);ctx.quadraticCurveTo(W*.25,H-90,W*.5,H-50);ctx.quadraticCurveTo(W*.75,H-85,W,H-35);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+      // Grass blades
+      ctx.lineWidth=2;for(let i=0;i<W;i+=5){const gh=6+Math.sin(i/3+frame/18)*4;ctx.strokeStyle=`hsl(${140+i%20},50%,${35+i%15}%)`;ctx.beginPath();ctx.moveTo(i,H-38);ctx.lineTo(i+Math.sin(frame/25+i)*2,H-38-gh);ctx.stroke()}
+      // Flowers
+      flowers.forEach(f=>{for(let p=0;p<5;p++){const a=p*1.257+Math.sin(frame/50)*.1;ctx.fillStyle=f.c;ctx.beginPath();ctx.ellipse(f.x+Math.cos(a)*f.r*.55,f.y+Math.sin(a)*f.r*.55,f.r*.45,f.r*.25,a,0,6.28);ctx.fill()}ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(f.x,f.y,f.r*.28,0,6.28);ctx.fill()});
+      // Butterflies
+      bfs.forEach(b=>{if(!b.alive)return;b.wing+=.16;b.x+=b.vx+Math.sin(frame/28+b.sz)*.9;b.y+=b.vy+Math.cos(frame/22+b.sz)*.7;
+        if(b.x<-30)b.x=W+20;if(b.x>W+30)b.x=-20;if(b.y<10||b.y>H-55)b.vy*=-1;
+        const ws=Math.sin(b.wing)*b.sz;
+        // Wings
+        ctx.fillStyle=b.c[0];ctx.beginPath();ctx.ellipse(b.x-ws*.5,b.y-4,Math.abs(ws)+2,b.sz*.65,-.3,0,6.28);ctx.fill();
+        ctx.fillStyle=b.c[1];ctx.beginPath();ctx.ellipse(b.x+ws*.5,b.y-4,Math.abs(ws)+2,b.sz*.65,.3,0,6.28);ctx.fill();
+        ctx.fillStyle=b.c[0]+'90';ctx.beginPath();ctx.ellipse(b.x-ws*.35,b.y+7,Math.abs(ws)*.6,b.sz*.45,-.2,0,6.28);ctx.fill();
+        ctx.fillStyle=b.c[1]+'90';ctx.beginPath();ctx.ellipse(b.x+ws*.35,b.y+7,Math.abs(ws)*.6,b.sz*.45,.2,0,6.28);ctx.fill();
+        // Body + antennae
+        ctx.fillStyle='#2d2d2d';ctx.fillRect(b.x-1.5,b.y-9,3,18);
+        ctx.strokeStyle='#2d2d2d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(b.x-1,b.y-9);ctx.quadraticCurveTo(b.x-8,b.y-20,b.x-6,b.y-22);ctx.moveTo(b.x+1,b.y-9);ctx.quadraticCurveTo(b.x+8,b.y-20,b.x+6,b.y-22);ctx.stroke();
+        ctx.fillStyle='#2d2d2d';ctx.beginPath();ctx.arc(b.x-6,b.y-22,2,0,6.28);ctx.arc(b.x+6,b.y-22,2,0,6.28);ctx.fill();
+        // Wing spots
+        ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(b.x-ws*.3,b.y-2,3.5,0,6.28);ctx.fill();ctx.beginPath();ctx.arc(b.x+ws*.3,b.y-2,3.5,0,6.28);ctx.fill()});
+      // Petal particles
+      for(let i=petals.length-1;i>=0;i--){const p=petals[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life--;if(p.life<=0){petals.splice(i,1);continue}ctx.globalAlpha=p.life/25;ctx.fillStyle=p.c;ctx.beginPath();ctx.ellipse(p.x,p.y,5,3,p.vx,0,6.28);ctx.fill()}ctx.globalAlpha=1;
+    });
+    function drawCloud(x,y,r){ctx.fillStyle='rgba(255,255,255,.65)';ctx.beginPath();ctx.arc(x,y,r,0,6.28);ctx.arc(x+r*.8,y-r*.2,r*.7,0,6.28);ctx.arc(x-r*.6,y+r*.1,r*.6,0,6.28);ctx.arc(x+r*.3,y+r*.3,r*.5,0,6.28);ctx.fill()}
+  }
+
+  // ======== GAME 2: GALAXY RUNNER ========
+  function game_galaxy(){
+    let px=W/2,py=H-55,alive=true;const ast=[];const stars=[];const particles=[];let respawnT=0,spawnT=0;
+    for(let i=0;i<70;i++)stars.push({x:Math.random()*W,y:Math.random()*H,s:.5+Math.random()*2,sp:.3+Math.random()*2.5});
+    function mv(e){e.preventDefault();if(!G.running||!alive)return;const p=getPos(e);px=p.x;py=Math.max(25,Math.min(H-25,p.y))}
+    on('mousemove',mv);on('touchmove',mv);on('touchstart',mv);
+    loop(()=>{
+      frame++;spawnT++;
+      if(alive&&spawnT>15){spawnT=0;const sz=8+Math.random()*18;const tp=Math.random();ast.push({x:Math.random()*(W-30)+15,y:-20,s:sz,sp:2+Math.random()*3.5,rot:Math.random()*6.28,rs:.02+Math.random()*.05,tp:tp>.7?2:tp>.35?1:0})}
+      // Space
+      ctx.fillStyle='#06001a';ctx.fillRect(0,0,W,H);
+      // Nebula
+      ctx.save();ctx.globalAlpha=.07;const nb=ctx.createRadialGradient(W*.6,H*.4,30,W*.5,H*.5,W*.7);nb.addColorStop(0,'#9b4dca');nb.addColorStop(.5,'#3730a3');nb.addColorStop(1,'transparent');ctx.fillStyle=nb;ctx.fillRect(0,0,W,H);
+      const nb2=ctx.createRadialGradient(W*.2,H*.7,20,W*.3,H*.6,W*.5);nb2.addColorStop(0,'#ec4899');nb2.addColorStop(1,'transparent');ctx.fillStyle=nb2;ctx.fillRect(0,0,W,H);ctx.restore();
+      // Stars
+      stars.forEach(s=>{s.y+=s.sp;if(s.y>H){s.y=-2;s.x=Math.random()*W}ctx.fillStyle=`rgba(255,255,255,${.2+s.s*.25})`;ctx.fillRect(s.x,s.y,s.s,s.s)});
+      // Trail particles
+      if(alive&&frame%2===0)for(let i=0;i<2;i++)particles.push({x:px+(Math.random()-.5)*6,y:py+14,vx:(Math.random()-.5)*1.5,vy:2+Math.random()*3,life:18,c:['#fbbf24','#fb923c','#ef4444'][Math.floor(Math.random()*3)]});
+      for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.life--;if(p.life<=0){particles.splice(i,1);continue}ctx.globalAlpha=p.life/18;ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,2+p.life*.1,0,6.28);ctx.fill()}ctx.globalAlpha=1;
+
+      if(!alive){respawnT++;ctx.fillStyle='rgba(255,60,60,.15)';ctx.fillRect(0,0,W,H);
+        // Explosion
+        for(let i=0;i<8;i++){const a=i*Math.PI/4+frame*.1;const d=respawnT*2;ctx.fillStyle=`rgba(255,${150+i*10},50,${Math.max(0,1-respawnT/30)})`;ctx.beginPath();ctx.arc(px+Math.cos(a)*d,py+Math.sin(a)*d,4,0,6.28);ctx.fill()}
+        ctx.fillStyle='white';ctx.font='bold 18px Fredoka';ctx.textAlign='center';ctx.fillText('💥 Respawning…',W/2,H/2);
+        if(respawnT>35){alive=true;respawnT=0;ast.length=0;px=W/2;py=H-55}return}
+
+      // Ship
+      ctx.save();ctx.translate(px,py);
+      ctx.fillStyle='#3b82f6';ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(-14,12);ctx.lineTo(-5,8);ctx.lineTo(0,15);ctx.lineTo(5,8);ctx.lineTo(14,12);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#60a5fa';ctx.beginPath();ctx.moveTo(0,-12);ctx.lineTo(-8,8);ctx.lineTo(8,8);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#93c5fd';ctx.beginPath();ctx.arc(0,-2,4.5,0,6.28);ctx.fill();
+      // Wing tips glow
+      ctx.fillStyle='rgba(96,165,250,.5)';ctx.beginPath();ctx.arc(-14,12,3,0,6.28);ctx.fill();ctx.beginPath();ctx.arc(14,12,3,0,6.28);ctx.fill();
+      ctx.restore();
+
+      // Asteroids
+      for(let i=ast.length-1;i>=0;i--){const a=ast[i];a.y+=a.sp;a.rot+=a.rs;if(a.y>H+30){ast.splice(i,1);continue}
+        if(alive&&Math.hypot(px-a.x,py-a.y)<a.s+10){alive=false;respawnT=0;continue}
+        ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.rot);
+        if(a.tp===2){// Crystal
+          ctx.fillStyle='#c084fc';ctx.beginPath();for(let k=0;k<6;k++)ctx.lineTo(Math.cos(k*1.047)*a.s,Math.sin(k*1.047)*a.s);ctx.closePath();ctx.fill();ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.lineTo(0,-a.s);ctx.lineTo(-a.s*.4,0);ctx.lineTo(0,a.s*.3);ctx.fill()}
+        else if(a.tp===1){// Ice
+          ctx.fillStyle='#a5f3fc';ctx.fillRect(-a.s*.6,-a.s*.6,a.s*1.2,a.s*1.2);ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(-a.s*.4,-a.s*.5,a.s*.3,a.s)}
+        else{// Rock
+          ctx.fillStyle='#6b7280';ctx.beginPath();ctx.arc(0,0,a.s,0,6.28);ctx.fill();ctx.fillStyle='#4b5563';ctx.beginPath();ctx.arc(-a.s*.3,a.s*.2,a.s*.3,0,6.28);ctx.fill();ctx.beginPath();ctx.arc(a.s*.25,-a.s*.2,a.s*.2,0,6.28);ctx.fill()}
+        ctx.restore()}
+      if(alive&&frame%6===0){gs++;scoreEl.textContent='✦ '+gs}
+    });
+  }
+
+  // ======== GAME 3: UNICORN JUMP ========
+  function game_unicorn(){
+    let ux=80,uy=H-80,vy=0,jumping=false,onGround=true;
+    const platforms=[];const coins=[];const sparkles2=[];
+    let scrollX=0,coinSpawn=0;
+    // Initial platforms
+    for(let i=0;i<8;i++)platforms.push({x:i*120,y:H-60-Math.random()*80,w:80+Math.random()*40,h:14,c:['#c084fc','#f472b6','#60a5fa','#34d399','#fbbf24'][i%5]});
+
+    function jump(){if(!G.running)return;if(onGround||uy>H-30){vy=-10;jumping=true;onGround=false}}
+    on('click',(e)=>{e.preventDefault();jump()});
+    on('touchstart',(e)=>{e.preventDefault();jump()});
+    on('keydown',(e)=>{if(e.code==='Space'){e.preventDefault();jump()}});
+
+    loop(()=>{
+      frame++;scrollX+=2.5;coinSpawn++;
+      // Add platforms
+      const lastP=platforms[platforms.length-1];
+      if(lastP.x-scrollX<W){const nx=lastP.x+100+Math.random()*60;platforms.push({x:nx,y:H-60-Math.random()*100,w:70+Math.random()*50,h:14,c:['#c084fc','#f472b6','#60a5fa','#34d399','#fbbf24'][Math.floor(Math.random()*5)]})}
+      // Remove old platforms
+      while(platforms.length>0&&platforms[0].x+platforms[0].w-scrollX<-50)platforms.shift();
+      // Coins
+      if(coinSpawn>40){coinSpawn=0;const cp=platforms[platforms.length-1];coins.push({x:cp.x+cp.w/2,y:cp.y-30,alive:true})}
+
+      // Physics
+      vy+=.45;uy+=vy;onGround=false;
+      // Ground
+      if(uy>=H-50){uy=H-50;vy=0;onGround=true}
+      // Platform collision
+      platforms.forEach(p=>{const px=p.x-scrollX;if(ux+15>px&&ux-15<px+p.w&&uy+20>=p.y&&uy+20<=p.y+p.h+8&&vy>=0){uy=p.y-20;vy=0;onGround=true}});
+      // Coin collection
+      coins.forEach(c=>{if(c.alive&&Math.hypot(ux-(c.x-scrollX),uy-c.y)<22){c.alive=false;gs++;scoreEl.textContent='✦ '+gs;for(let i=0;i<4;i++)sparkles2.push({x:c.x-scrollX,y:c.y,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,life:15})}});
+
+      // Draw sky
+      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#e1bee7');sky.addColorStop(.4,'#f8bbd0');sky.addColorStop(.7,'#fce4ec');sky.addColorStop(1,'#c8e6c9');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+      // Distant mountains
+      ctx.fillStyle='rgba(206,147,216,.3)';ctx.beginPath();ctx.moveTo(0,H-60);
+      for(let i=0;i<=W;i+=50)ctx.lineTo(i,H-60-Math.sin((i+scrollX*.2)/100)*40-20);
+      ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+      // Rainbow
+      const rc=['#ef444430','#fb923c30','#fbbf2430','#34d39930','#60a5fa30','#c084fc30'];
+      rc.forEach((c,i)=>{ctx.strokeStyle=c;ctx.lineWidth=4;ctx.beginPath();ctx.arc(W*.7,H*.3,120+i*5,Math.PI*.8,Math.PI*1.6);ctx.stroke()});
+      // Clouds
+      ctx.fillStyle='rgba(255,255,255,.5)';[[60-scrollX*.1%200,50,25],[200-scrollX*.15%300,35,20],[380-scrollX*.08%250,60,18]].forEach(c=>{ctx.beginPath();ctx.arc(c[0]%W,c[1],c[2],0,6.28);ctx.arc(c[0]%W+c[2]*.7,c[1]-c[2]*.2,c[2]*.65,0,6.28);ctx.arc(c[0]%W-c[2]*.5,c[1]+c[2]*.1,c[2]*.55,0,6.28);ctx.fill()});
+      // Ground
+      ctx.fillStyle='#a5d6a7';ctx.fillRect(0,H-30,W,30);
+      ctx.fillStyle='#81c784';for(let i=0;i<W;i+=8){const gh=4+Math.sin((i+scrollX)/4)*3;ctx.fillRect(i,H-30-gh,2,gh)}
+
+      // Platforms
+      platforms.forEach(p=>{const px=p.x-scrollX;ctx.fillStyle=p.c;ctx.beginPath();ctx.moveTo(px+6,p.y);ctx.lineTo(px+p.w-6,p.y);ctx.quadraticCurveTo(px+p.w,p.y,px+p.w,p.y+6);ctx.lineTo(px+p.w,p.y+p.h);ctx.lineTo(px,p.y+p.h);ctx.lineTo(px,p.y+6);ctx.quadraticCurveTo(px,p.y,px+6,p.y);ctx.fill();
+        // Top shine
+        ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(px+4,p.y+2,p.w-8,4)});
+
+      // Coins
+      coins.forEach(c=>{if(!c.alive)return;const cx=c.x-scrollX;ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(cx,c.y,9,0,6.28);ctx.fill();ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.arc(cx,c.y,6,0,6.28);ctx.fill();ctx.fillStyle='rgba(255,255,255,.4)';ctx.beginPath();ctx.arc(cx-2,c.y-2,3,0,6.28);ctx.fill()});
+
+      // Unicorn
+      ctx.save();ctx.translate(ux,uy);
+      // Body
+      ctx.fillStyle='white';ctx.beginPath();ctx.ellipse(0,0,18,14,0,0,6.28);ctx.fill();
+      // Head
+      ctx.fillStyle='white';ctx.beginPath();ctx.arc(14,-8,10,0,6.28);ctx.fill();
+      // Horn
+      ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.moveTo(18,-16);ctx.lineTo(15,-8);ctx.lineTo(21,-8);ctx.closePath();ctx.fill();
+      // Eye
+      ctx.fillStyle='#1a1a2e';ctx.beginPath();ctx.arc(18,-8,2.5,0,6.28);ctx.fill();
+      ctx.fillStyle='white';ctx.beginPath();ctx.arc(19,-9,1,0,6.28);ctx.fill();
+      // Mane
+      const maneC=['#ff6b9d','#c084fc','#60a5fa'];
+      maneC.forEach((c,i)=>{ctx.strokeStyle=c;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(8-i*3,-12);ctx.quadraticCurveTo(2-i*4,-18-Math.sin(frame/8+i)*4,-2-i*5,-10);ctx.stroke()});
+      // Tail
+      maneC.forEach((c,i)=>{ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(-16,0+i*2);ctx.quadraticCurveTo(-28,-8+i*4+Math.sin(frame/6+i)*4,-24,-15+i*6);ctx.stroke()});
+      // Legs
+      ctx.strokeStyle='white';ctx.lineWidth=4;
+      const legOff=Math.sin(frame/4)*4;
+      ctx.beginPath();ctx.moveTo(-8,12);ctx.lineTo(-8-legOff,22);ctx.moveTo(8,12);ctx.lineTo(8+legOff,22);ctx.moveTo(-3,12);ctx.lineTo(-3+legOff,22);ctx.moveTo(3,12);ctx.lineTo(3-legOff,22);ctx.stroke();
+      // Hooves
+      ctx.fillStyle='#e0e0e0';[-8-legOff,8+legOff,-3+legOff,3-legOff].forEach(lx=>{ctx.beginPath();ctx.arc(lx,22,2.5,0,6.28);ctx.fill()});
+      ctx.restore();
+
+      // Sparkle trail
+      if(frame%3===0)sparkles2.push({x:ux-15+Math.random()*6,y:uy+Math.random()*10,vx:-.5-Math.random(),vy:(Math.random()-.5)*1.5,life:12});
+      for(let i=sparkles2.length-1;i>=0;i--){const s=sparkles2[i];s.x+=s.vx;s.y+=s.vy;s.life--;if(s.life<=0){sparkles2.splice(i,1);continue}
+        ctx.globalAlpha=s.life/12;ctx.fillStyle=['#fbbf24','#f472b6','#c084fc','#60a5fa'][i%4];
+        // Star shape
+        ctx.save();ctx.translate(s.x,s.y);ctx.rotate(frame*.1);
+        ctx.beginPath();for(let k=0;k<5;k++){const a=k*1.257-1.571;ctx.lineTo(Math.cos(a)*3.5,Math.sin(a)*3.5);ctx.lineTo(Math.cos(a+.628)*1.5,Math.sin(a+.628)*1.5)}ctx.closePath();ctx.fill();ctx.restore()}
+      ctx.globalAlpha=1;
+    });
+  }
+}
+
+// ===================== CONFETTI =====================
+function spawnConfetti(){const cs=['#ff6b9d','#c084fc','#60a5fa','#34d399','#fbbf24','#fb923c'];for(let i=0;i<35;i++){const c=document.createElement('div');c.className='confetti';c.style.cssText=`left:${Math.random()*100}vw;width:${8+Math.random()*10}px;height:${8+Math.random()*10}px;background:${cs[i%6]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${2+Math.random()*2}s;animation-delay:${Math.random()*.5}s`;document.body.appendChild(c);setTimeout(()=>c.remove(),4500)}}
+function spawnMiniConfetti(){const cs=['#c084fc','#fbbf24','#f472b6','#34d399'];for(let i=0;i<10;i++){const c=document.createElement('div');c.className='confetti';c.style.cssText=`left:${30+Math.random()*40}vw;width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;background:${cs[i%4]};border-radius:50%;animation-duration:${1.5+Math.random()}s;animation-delay:${Math.random()*.2}s`;document.body.appendChild(c);setTimeout(()=>c.remove(),3000)}}
+(function(){const bg=document.getElementById('starsBg');for(let i=0;i<25;i++){const s=document.createElement('div');s.className='star';s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;opacity:${.2+Math.random()*.5}`;bg.appendChild(s)}})();
+render();
+</script>
+</body>
+</html>
