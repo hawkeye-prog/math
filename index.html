@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>Math Quest ✨ Advanced 4th Grade IAR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;900&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  body { margin: 0; font-family: 'Quicksand', sans-serif; user-select: none; -webkit-user-select: none;
+         -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; overscroll-behavior: none; }
+  /* When in a game, prevent body scroll/bounce on iPad */
+  body.in-game { position: fixed; width: 100%; height: 100%; overflow: hidden; touch-action: none; }
+  /* Touch buttons: never select, instant response, no callout */
+  .touch-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+               user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  /* Game canvas: never let the page scroll when touched */
+  canvas.game-canvas { touch-action: none; -ms-touch-action: none; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-30px) rotate(180deg); }
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    60% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes confetti {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(120vh) rotate(720deg); opacity: 0; }
+  }
+  @keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes pulse2 {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+  .icon { display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+// ==========================================
+// Inline SVG icons
+// ==========================================
+const Icon = ({ children, size = 24, className = "", fill = "none", style = {} }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+       fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+       className={"icon " + className} style={style}>{children}</svg>
+);
+const Star = (p) => <Icon {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Icon>;
+const Heart = (p) => <Icon {...p}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></Icon>;
+const Sparkles = (p) => <Icon {...p}><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></Icon>;
+const Trophy = (p) => <Icon {...p}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></Icon>;
+const Crown = (p) => <Icon {...p}><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zM5 20h14"/></Icon>;
+const Award = (p) => <Icon {...p}><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></Icon>;
+const ChevronRight = (p) => <Icon {...p}><polyline points="9 18 15 12 9 6"/></Icon>;
+const RefreshCw = (p) => <Icon {...p}><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></Icon>;
+
+// ==========================================
+// HoldButton: works reliably on iPad, Android, mouse.
+// Uses Pointer Events with setPointerCapture so the
+// "release" fires even if the finger slides off.
+// ==========================================
+function HoldButton({ onPress, onRelease, onTap, children, className = "", style = {} }) {
+  const ref = useRef(null);
+  const pointerIdRef = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const release = () => {
+      if (pointerIdRef.current !== null) {
+        try { el.releasePointerCapture(pointerIdRef.current); } catch (e) {}
+        pointerIdRef.current = null;
+        if (onRelease) onRelease();
+      }
+    };
+
+    const onPointerDown = (e) => {
+      e.preventDefault();
+      if (pointerIdRef.current !== null) return; // already pressed
+      pointerIdRef.current = e.pointerId;
+      try { el.setPointerCapture(e.pointerId); } catch (err) {}
+      if (onPress) onPress();
+      if (onTap) onTap();
+    };
+    const onPointerUp = (e) => {
+      if (pointerIdRef.current !== e.pointerId) return;
+      e.preventDefault();
+      release();
+    };
+    const onPointerCancel = (e) => {
+      if (pointerIdRef.current !== e.pointerId) return;
+      release();
+    };
+
+    // Fallback for old Safari (touch events)
+    const onTouchStart = (e) => {
+      e.preventDefault();
+      if (pointerIdRef.current !== null) return;
+      pointerIdRef.current = "touch";
+      if (onPress) onPress();
+      if (onTap) onTap();
+    };
+    const onTouchEnd = (e) => {
+      e.preventDefault();
+      if (pointerIdRef.current === "touch") {
+        pointerIdRef.current = null;
+        if (onRelease) onRelease();
+      }
+    };
+
+    // Mouse fallback
+    const onMouseDown = (e) => {
+      if (pointerIdRef.current !== null) return;
+      pointerIdRef.current = "mouse";
+      if (onPress) onPress();
+      if (onTap) onTap();
+    };
+    const onMouseUp = () => {
+      if (pointerIdRef.current === "mouse") {
+        pointerIdRef.current = null;
+        if (onRelease) onRelease();
+      }
+    };
+    const onMouseLeave = onMouseUp;
+
+    const supportsPointer = "PointerEvent" in window;
+    if (supportsPointer) {
+      el.addEventListener("pointerdown", onPointerDown);
+      el.addEventListener("pointerup", onPointerUp);
+      el.addEventListener("pointercancel", onPointerCancel);
+      el.addEventListener("pointerleave", onPointerCancel);
+    } else {
+      el.addEventListener("touchstart", onTouchStart, { passive: false });
+      el.addEventListener("touchend", onTouchEnd, { passive: false });
+      el.addEventListener("touchcancel", onTouchEnd, { passive: false });
+      el.addEventListener("mousedown", onMouseDown);
+      el.addEventListener("mouseup", onMouseUp);
+      el.addEventListener("mouseleave", onMouseLeave);
+    }
+
+    // Global safety net: if window loses focus, release
+    const onBlur = () => release();
+    window.addEventListener("blur", onBlur);
+    document.addEventListener("visibilitychange", onBlur);
+
+    return () => {
+      release();
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("pointercancel", onPointerCancel);
+      el.removeEventListener("pointerleave", onPointerCancel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+      el.removeEventListener("mousedown", onMouseDown);
+      el.removeEventListener("mouseup", onMouseUp);
+      el.removeEventListener("mouseleave", onMouseLeave);
+      window.removeEventListener("blur", onBlur);
+      document.removeEventListener("visibilitychange", onBlur);
+    };
+  }, [onPress, onRelease, onTap]);
+
+  return (
+    <button ref={ref} className={"touch-btn " + className} style={style}>
+      {children}
+    </button>
+  );
+}
+
+// ==========================================
+// 40 ADVANCED IAR-style 4th-grade questions
+// All answers verified mathematically.
+// ==========================================
+const QUESTIONS = [
+  // Multi-digit operations
+  { id: 1, type: "input", q: "What is 47,829 + 36,475?", answer: "84304", topic: "Big Addition", accept: ["84304", "84,304"] },
+  { id: 2, type: "input", q: "What is 80,003 − 47,568?", answer: "32435", topic: "Subtraction", accept: ["32435", "32,435"] },
+  { id: 3, type: "input", q: "Multiply: 234 × 56 = ?", answer: "13104", topic: "Multiplication", accept: ["13104", "13,104"] },
+  { id: 4, type: "input", q: "Divide: 4,872 ÷ 8 = ?", answer: "609", topic: "Division" },
+  { id: 5, type: "input", q: "Divide: 952 ÷ 14 = ?", answer: "68", topic: "Division" },
+
+  // Place value (extending to 7-digit)
+  { id: 6, type: "mc", q: "What is the value of the 6 in 6,847,392?", choices: ["6,000", "60,000", "600,000", "6,000,000"], answer: "6,000,000", topic: "Place Value" },
+  { id: 7, type: "input", q: "Write the number: 50,000 + 3,000 + 800 + 40 + 5", answer: "53845", topic: "Expanded Form", accept: ["53845", "53,845"] },
+
+  // Fractions with unlike denominators
+  { id: 8, type: "mc", q: "What is 2/3 + 1/4? (Hint: common denominator)", choices: ["3/7", "8/12", "11/12", "9/12"], answer: "11/12", topic: "Fractions" },
+  { id: 9, type: "mc", q: "What is 7/8 − 1/3?", choices: ["6/5", "13/24", "1/2", "8/24"], answer: "13/24", topic: "Fractions" },
+  { id: 10, type: "mc", q: "What is 3/5 × 4? (write as improper fraction)", choices: ["7/5", "12/5", "12/20", "3/20"], answer: "12/5", topic: "Fractions × Whole" },
+  { id: 11, type: "mc", q: "Simplify: 5/6 − 1/2", choices: ["4/4", "1/3", "4/6", "2/3"], answer: "1/3", topic: "Fractions" },
+  { id: 12, type: "mc", q: "What is 2 3/4 + 1 1/2?", choices: ["3 4/6", "4 1/4", "3 1/2", "4 1/2"], answer: "4 1/4", topic: "Mixed Numbers" },
+  { id: 13, type: "mc", q: "Which is greater: 5/8 or 7/12?", choices: ["5/8", "7/12", "Equal", "Need calculator"], answer: "5/8", topic: "Compare Fractions" },
+
+  // Decimals
+  { id: 14, type: "input", q: "What is 0.45 + 0.78?", answer: "1.23", topic: "Decimals" },
+  { id: 15, type: "input", q: "What is 5.6 − 2.85?", answer: "2.75", topic: "Decimals" },
+  { id: 16, type: "input", q: "What is 0.7 × 8?", answer: "5.6", topic: "Decimals" },
+  { id: 17, type: "mc", q: "What fraction equals 0.625?", choices: ["5/8", "6/25", "1/4", "62/100"], answer: "5/8", topic: "Decimals → Fractions" },
+
+  // Multi-step word problems
+  { id: 18, type: "input", q: "Sarah has $50. She buys 3 books at $7.25 each. How much money does she have left? (no $ sign)", answer: "28.25", topic: "Word Problem" },
+  { id: 19, type: "input", q: "A box has 6 packs of cards. Each pack has 8 cards. How many cards total?", answer: "48", topic: "Word Problem" },
+  { id: 20, type: "input", q: "Mom baked 60 cookies and put 4 in each goodie bag. How many bags?", answer: "15", topic: "Word Problem" },
+  { id: 21, type: "input", q: "A pool is 25 ft long and 18 ft wide. How many feet of fence to go all the way around?", answer: "86", topic: "Perimeter" },
+  { id: 22, type: "input", q: "Tara saves $4.50 every week for 12 weeks. How much in dollars? (no $ sign)", answer: "54", topic: "Word Problem", accept: ["54", "54.00", "54.0"] },
+  { id: 23, type: "input", q: "A school has 856 students. 1/4 are in 4th grade. How many are 4th graders?", answer: "214", topic: "Fractions of Sets" },
+
+  // Factors, multiples, primes
+  { id: 24, type: "mc", q: "What is the GREATEST common factor of 18 and 24?", choices: ["2", "3", "6", "9"], answer: "6", topic: "GCF" },
+  { id: 25, type: "mc", q: "What is the LEAST common multiple of 4 and 6?", choices: ["10", "12", "18", "24"], answer: "12", topic: "LCM" },
+  { id: 26, type: "mc", q: "Which of these is a prime number?", choices: ["21", "27", "29", "33"], answer: "29", topic: "Primes" },
+  { id: 27, type: "mc", q: "Is 91 prime or composite? (Hint: try dividing by 7)", choices: ["Prime", "Composite", "Both", "Neither"], answer: "Composite", topic: "Primes" },
+
+  // Patterns
+  { id: 28, type: "input", q: "What's missing? 1, 4, 9, 16, ___, 36 (think: square numbers!)", answer: "25", topic: "Patterns" },
+  { id: 29, type: "input", q: "What comes next? 2, 6, 12, 20, 30, ___", answer: "42", topic: "Patterns" },
+
+  // Measurement
+  { id: 30, type: "input", q: "How many minutes are in 3 1/2 hours?", answer: "210", topic: "Time" },
+  { id: 31, type: "input", q: "How many ounces are in 2 lb 5 oz? (1 lb = 16 oz)", answer: "37", topic: "Weight" },
+  { id: 32, type: "input", q: "A rectangle has area 72 sq ft and length 9 ft. What is its width in feet?", answer: "8", topic: "Area" },
+  { id: 33, type: "input", q: "A triangle has sides 12 cm, 15 cm, and 18 cm. What is the perimeter?", answer: "45", topic: "Perimeter" },
+
+  // Geometry
+  { id: 34, type: "mc", q: "What kind of angle is 135°?", choices: ["Acute", "Right", "Obtuse", "Straight"], answer: "Obtuse", topic: "Angles" },
+  { id: 35, type: "mc", q: "How many sides does a parallelogram have?", choices: ["3", "4", "5", "6"], answer: "4", topic: "Geometry" },
+  { id: 36, type: "mc", q: "How many right angles does a right triangle have?", choices: ["0", "1", "2", "3"], answer: "1", topic: "Geometry" },
+  { id: 37, type: "mc", q: "How many lines of symmetry does a (non-square) rectangle have?", choices: ["1", "2", "3", "4"], answer: "2", topic: "Symmetry" },
+
+  // Money
+  { id: 38, type: "input", q: "What is the value (in cents) of 1 quarter, 3 dimes, 2 nickels, and 4 pennies?", answer: "69", topic: "Money" },
+
+  // Elapsed time
+  { id: 39, type: "mc", q: "A movie starts at 2:45 PM and lasts 1 hour 50 minutes. When does it end?", choices: ["4:25 PM", "4:35 PM", "4:45 PM", "3:55 PM"], answer: "4:35 PM", topic: "Elapsed Time" },
+
+  // Volume
+  { id: 40, type: "input", q: "A rectangular box is 5 cubes long, 3 cubes wide, and 4 cubes tall. How many cubes total?", answer: "60", topic: "Volume" },
+];
+
+// ==========================================
+// Floating sparkles
+// ==========================================
+function FloatingBackground() {
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {Array.from({ length: 18 }, (_, i) => {
+        const left = (i * 37) % 100, top = (i * 53) % 100;
+        const size = 8 + (i % 4) * 6, delay = (i * 0.4) % 6, dur = 6 + (i % 5);
+        return (
+          <div key={i} className="absolute"
+               style={{ left: `${left}%`, top: `${top}%`, animation: `float ${dur}s ease-in-out ${delay}s infinite` }}>
+            <Star size={size} className="text-pink-200" fill="currentColor"
+                  style={{ filter: "drop-shadow(0 0 6px rgba(255,182,193,0.8))" }} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ==========================================
+// Welcome Screen
+// ==========================================
+function WelcomeScreen({ onStart, name, setName }) {
+  return (
+    <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
+      <div className="bg-white/85 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-10 max-w-xl w-full border-4 border-pink-200"
+           style={{ boxShadow: "0 25px 60px -15px rgba(236,72,153,0.4)" }}>
+        <div className="flex justify-center mb-4">
+          <div className="relative">
+            <Crown size={64} className="text-yellow-400" fill="currentColor" />
+            <Sparkles size={20} className="absolute -top-2 -right-2 text-pink-400" fill="currentColor" />
+          </div>
+        </div>
+        <h1 className="text-5xl text-center mb-2 font-black"
+            style={{ fontFamily: "'Fredoka', cursive",
+                     background: "linear-gradient(135deg,#ec4899,#a855f7,#3b82f6)",
+                     WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          Math Quest
+        </h1>
+        <p className="text-center text-purple-700 text-lg mb-6" style={{ fontFamily: "'Fredoka', cursive" }}>
+          ✨ Advanced 4th-Grade Adventure ✨
+        </p>
+        <div className="bg-pink-50 rounded-2xl p-4 mb-6 border-2 border-pink-200">
+          <p className="text-purple-800 text-center text-sm leading-relaxed">
+            <strong>40 challenge questions</strong> across all your math skills!<br />
+            🎮 Get <strong>18+ on the first 20</strong> → unlock <strong>Crystal Cave Runner</strong><br />
+            🏆 Get <strong>more than 36 of 40</strong> → unlock <strong>Sky Princess Adventure</strong> + a certificate!
+          </p>
+        </div>
+        <input type="text" placeholder="Enter your name, math hero ✨"
+               value={name} onChange={(e) => setName(e.target.value)}
+               className="w-full px-5 py-3 mb-4 rounded-2xl text-purple-800 text-center text-lg focus:outline-none focus:border-pink-400 bg-white"
+               style={{ borderWidth: "3px", borderStyle: "solid", borderColor: "#d8b4fe" }} />
+        <button onClick={onStart} disabled={!name.trim()}
+                className="w-full py-4 rounded-2xl text-white text-xl font-bold transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ fontFamily: "'Fredoka', cursive",
+                         background: "linear-gradient(135deg,#ec4899,#a855f7)",
+                         boxShadow: "0 10px 25px -5px rgba(236,72,153,0.5)" }}>
+          Start the Adventure! 🌟
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// Question Card
+// ==========================================
+function QuestionCard({ q, qIndex, total, score, onAnswer, name }) {
+  const [input, setInput] = useState("");
+  const [feedback, setFeedback] = useState(null);
+  const [locked, setLocked] = useState(false);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    setInput(""); setFeedback(null); setLocked(false);
+    if (q.type === "input" && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [q.id]);
+
+  const normalize = (s) => String(s).trim().toLowerCase().replace(/\s+/g, " ").replace(/^\s+|\s+$/g, "").replace(/,/g, "");
+  const checkAnswer = (given) => {
+    if (locked) return;
+    setLocked(true);
+    const correctList = q.accept || [q.answer];
+    const correct = correctList.some((a) => normalize(a) === normalize(given));
+    setFeedback({ correct, correctAnswer: q.answer });
+    setTimeout(() => onAnswer(correct), correct ? 1300 : 2100);
+  };
+
+  const progress = (qIndex / total) * 100;
+
+  return (
+    <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full">
+        <div className="flex items-center justify-between mb-4 px-2">
+          <div className="bg-white/90 backdrop-blur rounded-full px-4 py-2 shadow-lg flex items-center gap-2"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <Sparkles size={18} className="text-purple-500" fill="currentColor" />
+            <span className="text-purple-700 font-bold">{qIndex + 1} / {total}</span>
+          </div>
+          <div className="bg-white/90 backdrop-blur rounded-full px-4 py-2 shadow-lg flex items-center gap-2"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <Star size={18} className="text-yellow-400" fill="currentColor" />
+            <span className="text-purple-700 font-bold">{score}</span>
+          </div>
+        </div>
+
+        <div className="bg-white/60 rounded-full h-3 overflow-hidden mb-6 shadow-inner">
+          <div className="h-full transition-all duration-700 ease-out"
+               style={{ width: `${progress}%`, background: "linear-gradient(90deg,#ec4899,#a855f7,#3b82f6)" }} />
+        </div>
+
+        <div key={q.id}
+             className="bg-white/95 backdrop-blur-md rounded-[2rem] shadow-2xl p-8 border-4 border-pink-200"
+             style={{ boxShadow: "0 25px 60px -15px rgba(168,85,247,0.4)", animation: "cardIn 0.5s ease-out" }}>
+          <div className="flex justify-between items-center mb-4">
+            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white"
+                  style={{ fontFamily: "'Fredoka', cursive",
+                           background: "linear-gradient(90deg,#a855f7,#ec4899)" }}>
+              {q.topic}
+            </span>
+            <Heart size={20} className="text-pink-400" fill="currentColor" />
+          </div>
+
+          <h2 className="text-2xl md:text-3xl text-purple-900 mb-6 leading-snug font-bold"
+              style={{ fontFamily: "'Fredoka', cursive" }}>
+            {q.q}
+          </h2>
+
+          {q.type === "mc" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {q.choices.map((c, i) => {
+                const colors = ["from-pink-400 to-pink-500", "from-purple-400 to-purple-500",
+                                "from-blue-400 to-blue-500", "from-teal-400 to-teal-500"];
+                const isCorrectChoice = feedback && c === q.answer;
+                const isWrongPicked = feedback && !feedback.correct && input === c;
+                return (
+                  <button key={i} onClick={() => { setInput(c); checkAnswer(c); }}
+                          disabled={locked}
+                          className={`p-4 rounded-2xl text-white text-lg font-bold transition-all transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed bg-gradient-to-br ${colors[i % 4]} ${
+                            isCorrectChoice ? "ring-4 ring-green-400 scale-105" : ""
+                          } ${isWrongPicked ? "ring-4 ring-red-400 opacity-70" : ""}`}
+                          style={{ fontFamily: "'Fredoka', cursive",
+                                   boxShadow: "0 8px 20px -5px rgba(0,0,0,0.2)" }}>
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div>
+              <input ref={inputRef} type="text" value={input}
+                     onChange={(e) => setInput(e.target.value)}
+                     onKeyDown={(e) => { if (e.key === "Enter" && input.trim() && !locked) checkAnswer(input); }}
+                     disabled={locked} placeholder="Type your answer..."
+                     className="w-full px-5 py-4 rounded-2xl text-purple-800 text-2xl text-center font-bold focus:outline-none focus:border-pink-400 bg-white"
+                     style={{ fontFamily: "'Fredoka', cursive", borderWidth: "4px", borderStyle: "solid", borderColor: "#d8b4fe" }} />
+              <button onClick={() => input.trim() && checkAnswer(input)}
+                      disabled={locked || !input.trim()}
+                      className="w-full mt-3 py-3 rounded-2xl text-white text-lg font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                      style={{ fontFamily: "'Fredoka', cursive",
+                               background: "linear-gradient(135deg,#ec4899,#a855f7)" }}>
+                Submit <ChevronRight size={18} className="inline" />
+              </button>
+            </div>
+          )}
+
+          {feedback && (
+            <div className={`mt-5 p-4 rounded-2xl text-center font-bold text-lg ${
+                   feedback.correct ? "bg-green-100 text-green-700" : "bg-pink-100 text-pink-700" }`}
+                 style={{ fontFamily: "'Fredoka', cursive", animation: "popIn 0.4s ease-out" }}>
+              {feedback.correct ? (
+                <span>🎉 Yes! You got it, {name}! ✨</span>
+              ) : (
+                <span>💖 Not quite! The answer was <strong>{feedback.correctAnswer}</strong></span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// Mid-checkpoint
+// ==========================================
+function MidCheckpoint({ score, onContinue, onPlayGame, name }) {
+  const earned = score >= 18;
+  return (
+    <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
+      <div className="bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-10 max-w-xl w-full border-4 border-pink-200 text-center"
+           style={{ boxShadow: "0 25px 60px -15px rgba(236,72,153,0.4)" }}>
+        <div className="flex justify-center mb-4">
+          {earned ? (
+            <div className="relative">
+              <Trophy size={80} className="text-yellow-400" fill="currentColor"
+                      style={{ filter: "drop-shadow(0 0 15px rgba(250,204,21,0.7))" }} />
+              <Sparkles size={28} className="absolute -top-2 -right-2 text-pink-400" fill="currentColor" />
+            </div>
+          ) : <Heart size={80} className="text-pink-400" fill="currentColor" />}
+        </div>
+        <h2 className="text-4xl mb-2 font-black"
+            style={{ fontFamily: "'Fredoka', cursive",
+                     background: "linear-gradient(135deg,#ec4899,#a855f7)",
+                     WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          {earned ? "Halftime Magic! 🌟" : "Halfway There!"}
+        </h2>
+        <p className="text-purple-700 text-xl mb-6" style={{ fontFamily: "'Fredoka', cursive" }}>
+          You scored <strong>{score} / 20</strong>, {name}!
+        </p>
+
+        {earned ? (
+          <div>
+            <div className="bg-gradient-to-r from-yellow-100 to-pink-100 rounded-2xl p-4 mb-5 border-2 border-yellow-300">
+              <p className="text-purple-800">
+                💎 You unlocked <strong>Crystal Cave Runner</strong>! Jump on platforms, dodge spikes, collect crystals!
+              </p>
+            </div>
+            <button onClick={onPlayGame}
+                    className="w-full py-4 rounded-2xl text-white text-xl font-bold transition-all hover:scale-105 active:scale-95 mb-3"
+                    style={{ fontFamily: "'Fredoka', cursive",
+                             background: "linear-gradient(135deg,#f59e0b,#ec4899)",
+                             boxShadow: "0 10px 25px -5px rgba(245,158,11,0.5)" }}>
+              Enter the Crystal Cave 💎
+            </button>
+            <button onClick={onContinue}
+                    className="w-full py-3 rounded-2xl text-purple-700 text-md font-bold border-2 border-purple-300 hover:bg-purple-50"
+                    style={{ fontFamily: "'Fredoka', cursive" }}>
+              Skip game & continue questions
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="bg-pink-50 rounded-2xl p-4 mb-5 border-2 border-pink-200">
+              <p className="text-purple-800">
+                Keep going! 20 more questions. You can still earn the special prize at the end! 💪✨
+              </p>
+            </div>
+            <button onClick={onContinue}
+                    className="w-full py-4 rounded-2xl text-white text-xl font-bold transition-all hover:scale-105 active:scale-95"
+                    style={{ fontFamily: "'Fredoka', cursive",
+                             background: "linear-gradient(135deg,#ec4899,#a855f7)" }}>
+              Keep Going! 💪
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================
+// GAME 1: Crystal Cave Runner — side-scrolling platformer
+// Features: gravity, double-jump, scrolling world, parallax,
+// crystals, mushroom bouncers, spike traps, moving platforms,
+// goblin enemies, lives, fairy character with wing flutter.
+// ==========================================================
+function CrystalCaveGame({ onFinish }) {
+  const canvasRef = useRef(null);
+  const [hud, setHud] = useState({ score: 0, lives: 3, gems: 0, time: 600 });
+  const stateRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    const GRAVITY = 1500, JUMP_VEL = -560, MOVE_SPEED = 280, MAX_FALL = 900;
+
+    // Build a long level
+    const level = {
+      width: 6000,
+      ground: H - 60,
+      platforms: [],
+      crystals: [],
+      mushrooms: [],
+      spikes: [],
+      enemies: [],
+      checkpoints: [],
+    };
+
+    // Ground sections with gaps
+    const groundSections = [
+      [0, 800], [950, 1500], [1700, 2400], [2600, 3300],
+      [3500, 4100], [4250, 4900], [5050, 6000]
+    ];
+
+    // Platforms (x, y, w, optional move)
+    const plats = [
+      { x: 300, y: 420, w: 100 }, { x: 500, y: 340, w: 100 }, { x: 700, y: 420, w: 100 },
+      { x: 1000, y: 380, w: 120 }, { x: 1200, y: 300, w: 100 }, { x: 1400, y: 380, w: 120 },
+      { x: 1750, y: 360, w: 90 }, { x: 1900, y: 280, w: 90 }, { x: 2050, y: 360, w: 90 }, { x: 2200, y: 280, w: 90 },
+      { x: 2700, y: 380, w: 100, move: { axis: "y", min: 320, max: 440, speed: 70, dir: 1 } },
+      { x: 2900, y: 280, w: 100 },
+      { x: 3100, y: 380, w: 100, move: { axis: "y", min: 320, max: 440, speed: 70, dir: -1 } },
+      { x: 3550, y: 400, w: 80 }, { x: 3700, y: 320, w: 80 }, { x: 3850, y: 240, w: 80 }, { x: 4000, y: 320, w: 80 },
+      { x: 4300, y: 380, w: 100, move: { axis: "x", min: 4300, max: 4500, speed: 80, dir: 1 } },
+      { x: 4600, y: 320, w: 100 }, { x: 4750, y: 380, w: 100 },
+      { x: 5100, y: 380, w: 110 }, { x: 5300, y: 320, w: 110 }, { x: 5500, y: 260, w: 110 }, { x: 5700, y: 200, w: 110 },
+    ];
+    level.platforms = plats.map((p) => ({ ...p, baseX: p.x, baseY: p.y, h: 18 }));
+
+    // Crystals - sparkly collectibles
+    const crystalSpots = [
+      [350, 380], [550, 300], [750, 380], [900, 200],
+      [1050, 340], [1250, 260], [1450, 340],
+      [1800, 320], [1950, 240], [2100, 320], [2250, 240],
+      [2750, 340], [2950, 240], [3150, 340],
+      [3600, 360], [3750, 280], [3900, 200], [4050, 280],
+      [4350, 340], [4650, 280], [4800, 340],
+      [5150, 340], [5350, 280], [5550, 220], [5750, 160],
+      [5870, 100],
+    ];
+    level.crystals = crystalSpots.map((c) => ({ x: c[0], y: c[1], collected: false, t: Math.random() * Math.PI * 2 }));
+
+    // Mushroom bouncers - spring you high
+    level.mushrooms = [
+      { x: 1600, y: H - 80 }, { x: 2480, y: H - 80 }, { x: 3380, y: H - 80 }, { x: 4170, y: H - 80 }, { x: 4970, y: H - 80 },
+    ];
+
+    // Spike traps on ground
+    level.spikes = [
+      { x: 850, y: H - 80, w: 80 }, { x: 1580, y: H - 80, w: 80 }, { x: 2480, y: H - 80, w: 80 },
+      { x: 3380, y: H - 80, w: 80 }, { x: 4170, y: H - 80, w: 80 }, { x: 4970, y: H - 80, w: 80 },
+    ];
+    // Move spikes off mushroom positions (don't overlap)
+    level.spikes = level.spikes.filter(s => !level.mushrooms.some(m => Math.abs(m.x - s.x - s.w/2) < 50));
+
+    // Goblins - patrol enemies
+    level.enemies = [
+      { x: 600, y: H - 90, w: 30, h: 30, vx: -50, baseX: 600, range: 100, type: "goblin", alive: true },
+      { x: 1300, y: H - 90, w: 30, h: 30, vx: 60, baseX: 1300, range: 120, type: "goblin", alive: true },
+      { x: 2100, y: H - 90, w: 30, h: 30, vx: -50, baseX: 2100, range: 100, type: "goblin", alive: true },
+      { x: 3000, y: H - 90, w: 30, h: 30, vx: 70, baseX: 3000, range: 130, type: "goblin", alive: true },
+      { x: 3800, y: H - 90, w: 30, h: 30, vx: -60, baseX: 3800, range: 110, type: "goblin", alive: true },
+      { x: 4500, y: H - 90, w: 30, h: 30, vx: 60, baseX: 4500, range: 110, type: "goblin", alive: true },
+      // bat - flies
+      { x: 1900, y: 200, w: 28, h: 22, vx: -60, baseX: 1900, range: 200, baseY: 200, t: 0, type: "bat", alive: true },
+      { x: 3500, y: 220, w: 28, h: 22, vx: 70, baseX: 3500, range: 200, baseY: 220, t: 0, type: "bat", alive: true },
+      { x: 5200, y: 200, w: 28, h: 22, vx: 60, baseX: 5200, range: 200, baseY: 200, t: 0, type: "bat", alive: true },
+    ];
+
+    stateRef.current = {
+      player: {
+        x: 100, y: 400, w: 28, h: 36, vx: 0, vy: 0, onGround: false,
+        jumpsLeft: 2, dir: 1, wing: 0, invuln: 0, hurtFlash: 0,
+      },
+      keys: {},
+      camera: 0,
+      level,
+      groundSections,
+      score: 0, lives: 3, gems: 0,
+      particles: [],
+      collectFlashes: [],
+      running: true,
+      gameOver: false,
+      win: false,
+      flagX: 5950,
+      time: performance.now(),
+      shake: 0,
+    };
+
+    const onKeyDown = (e) => {
+      const k = e.key.toLowerCase();
+      stateRef.current.keys[k] = true;
+      stateRef.current.keys[e.key] = true;
+      if ((e.key === " " || k === "arrowup" || k === "w") && !e.repeat) {
+        const p = stateRef.current.player;
+        if (p.jumpsLeft > 0) {
+          p.vy = JUMP_VEL;
+          p.jumpsLeft -= 1;
+          // jump particles
+          for (let i = 0; i < 8; i++) {
+            stateRef.current.particles.push({
+              x: p.x + p.w / 2 + (Math.random() - 0.5) * 10,
+              y: p.y + p.h,
+              vx: (Math.random() - 0.5) * 100,
+              vy: Math.random() * 100,
+              life: 0.6, color: "#fbcfe8", size: 3,
+            });
+          }
+        }
+      }
+      if (e.key === " " || ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
+    };
+    const onKeyUp = (e) => {
+      stateRef.current.keys[e.key.toLowerCase()] = false;
+      stateRef.current.keys[e.key] = false;
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+
+    // ============ DRAWING HELPERS ============
+    const drawFairy = (px, py, dir, wing, hurtFlash) => {
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.scale(dir, 1);
+      if (hurtFlash > 0 && Math.floor(hurtFlash * 20) % 2 === 0) ctx.globalAlpha = 0.4;
+      // wings (behind)
+      const wingFlap = Math.sin(wing) * 0.5 + 0.5;
+      const wingGrad = ctx.createRadialGradient(-2, 8, 2, -2, 8, 18);
+      wingGrad.addColorStop(0, "rgba(255,255,255,0.95)");
+      wingGrad.addColorStop(0.5, "rgba(236,72,153,0.7)");
+      wingGrad.addColorStop(1, "rgba(168,85,247,0.3)");
+      ctx.fillStyle = wingGrad;
+      ctx.shadowColor = "rgba(236,72,153,0.6)";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.ellipse(-8, 8, 14 * (1 - wingFlap * 0.4), 18, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(-8, 22, 12 * (1 - wingFlap * 0.4), 14, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // body - pink dress
+      const bodyGrad = ctx.createLinearGradient(0, 14, 0, 36);
+      bodyGrad.addColorStop(0, "#fbcfe8");
+      bodyGrad.addColorStop(1, "#ec4899");
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.moveTo(-10, 36);
+      ctx.lineTo(-7, 16);
+      ctx.lineTo(7, 16);
+      ctx.lineTo(10, 36);
+      ctx.closePath();
+      ctx.fill();
+      // arms
+      ctx.fillStyle = "#fef3c7";
+      ctx.fillRect(-10, 18, 4, 12);
+      ctx.fillRect(6, 18, 4, 12);
+      // head
+      ctx.fillStyle = "#fef3c7";
+      ctx.beginPath();
+      ctx.arc(0, 8, 9, 0, Math.PI * 2);
+      ctx.fill();
+      // hair (purple/pink ombre)
+      const hairGrad = ctx.createLinearGradient(0, -2, 0, 18);
+      hairGrad.addColorStop(0, "#a855f7");
+      hairGrad.addColorStop(1, "#ec4899");
+      ctx.fillStyle = hairGrad;
+      ctx.beginPath();
+      ctx.arc(0, 5, 10, Math.PI, Math.PI * 2);
+      ctx.fill();
+      // long hair flowing
+      ctx.beginPath();
+      ctx.moveTo(-9, 5);
+      ctx.quadraticCurveTo(-12, 18, -8, 24);
+      ctx.lineTo(-4, 22);
+      ctx.lineTo(-6, 8);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(9, 5);
+      ctx.quadraticCurveTo(12, 18, 8, 24);
+      ctx.lineTo(4, 22);
+      ctx.lineTo(6, 8);
+      ctx.fill();
+      // eyes
+      ctx.fillStyle = "#1e1b4b";
+      ctx.beginPath(); ctx.arc(3, 8, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-3, 8, 1.6, 0, Math.PI * 2); ctx.fill();
+      // smile
+      ctx.strokeStyle = "#be185d";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(0, 11, 2, 0, Math.PI); ctx.stroke();
+      // crown / tiara
+      ctx.fillStyle = "#fde047";
+      ctx.shadowColor = "#fbbf24"; ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(-6, 0);
+      ctx.lineTo(-3, -5);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(3, -5);
+      ctx.lineTo(6, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    };
+
+    const drawCrystal = (cx, cy, t) => {
+      const bob = Math.sin(t * 3) * 4;
+      const spin = t;
+      ctx.save();
+      ctx.translate(cx, cy + bob);
+      ctx.rotate(Math.sin(spin) * 0.1);
+      // glow
+      ctx.shadowColor = "#06b6d4";
+      ctx.shadowBlur = 20;
+      const grad = ctx.createLinearGradient(0, -12, 0, 12);
+      grad.addColorStop(0, "#bef264");
+      grad.addColorStop(0.5, "#06b6d4");
+      grad.addColorStop(1, "#3b82f6");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(0, -12);
+      ctx.lineTo(8, -4);
+      ctx.lineTo(8, 8);
+      ctx.lineTo(0, 14);
+      ctx.lineTo(-8, 8);
+      ctx.lineTo(-8, -4);
+      ctx.closePath();
+      ctx.fill();
+      // facets
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.beginPath();
+      ctx.moveTo(0, -12);
+      ctx.lineTo(-4, 0);
+      ctx.lineTo(0, 4);
+      ctx.lineTo(4, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const drawMushroom = (mx, my) => {
+      ctx.save();
+      ctx.translate(mx, my);
+      // stem
+      ctx.fillStyle = "#fef3c7";
+      ctx.fillRect(-10, 0, 20, 20);
+      // cap
+      const grad = ctx.createRadialGradient(0, -8, 4, 0, -8, 22);
+      grad.addColorStop(0, "#f87171");
+      grad.addColorStop(1, "#dc2626");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, -2, 22, Math.PI, 0);
+      ctx.closePath();
+      ctx.fill();
+      // dots
+      ctx.fillStyle = "#fff";
+      [[-10, -8, 4], [8, -10, 3], [0, -16, 3]].forEach(([x, y, r]) => {
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.restore();
+    };
+
+    const drawSpikes = (sx, sy, sw) => {
+      ctx.save();
+      ctx.translate(sx, sy);
+      const count = Math.floor(sw / 12);
+      ctx.fillStyle = "#94a3b8";
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < count; i++) {
+        const x = i * 12;
+        ctx.beginPath();
+        ctx.moveTo(x, 20);
+        ctx.lineTo(x + 6, -2);
+        ctx.lineTo(x + 12, 20);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    };
+
+    const drawGoblin = (g) => {
+      ctx.save();
+      ctx.translate(g.x, g.y);
+      ctx.scale(g.vx >= 0 ? 1 : -1, 1);
+      // body green
+      const grad = ctx.createLinearGradient(0, 0, 0, g.h);
+      grad.addColorStop(0, "#84cc16");
+      grad.addColorStop(1, "#365314");
+      ctx.fillStyle = grad;
+      ctx.shadowColor = "rgba(0,0,0,0.4)";
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(0, 0, g.w, g.h, 6) : ctx.rect(0, 0, g.w, g.h);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // ears
+      ctx.beginPath();
+      ctx.moveTo(0, 8); ctx.lineTo(-6, 2); ctx.lineTo(0, 14); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(g.w, 8); ctx.lineTo(g.w + 6, 2); ctx.lineTo(g.w, 14); ctx.fill();
+      // eyes
+      ctx.fillStyle = "#fef3c7";
+      ctx.beginPath(); ctx.arc(g.w * 0.65, 12, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(g.w * 0.35, 12, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#1e1b4b";
+      ctx.beginPath(); ctx.arc(g.w * 0.65, 12, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(g.w * 0.35, 12, 1.5, 0, Math.PI * 2); ctx.fill();
+      // teeth
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(g.w * 0.4, 20, 3, 4);
+      ctx.fillRect(g.w * 0.55, 20, 3, 4);
+      ctx.restore();
+    };
+
+    const drawBat = (b) => {
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      const flap = Math.sin(b.t * 12) * 0.5 + 0.5;
+      ctx.fillStyle = "#581c87";
+      ctx.shadowColor = "#1e1b4b"; ctx.shadowBlur = 8;
+      // body
+      ctx.beginPath();
+      ctx.ellipse(b.w / 2, b.h / 2, 6, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // wings flapping
+      ctx.beginPath();
+      ctx.moveTo(b.w / 2, b.h / 2);
+      ctx.quadraticCurveTo(-2, b.h / 2 - 8 * flap, -8, b.h / 2 + 6);
+      ctx.quadraticCurveTo(-2, b.h / 2 - 2, b.w / 2, b.h / 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(b.w / 2, b.h / 2);
+      ctx.quadraticCurveTo(b.w + 2, b.h / 2 - 8 * flap, b.w + 8, b.h / 2 + 6);
+      ctx.quadraticCurveTo(b.w + 2, b.h / 2 - 2, b.w / 2, b.h / 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // eyes
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath(); ctx.arc(b.w / 2 - 3, b.h / 2 - 1, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(b.w / 2 + 3, b.h / 2 - 1, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    };
+
+    const drawFlag = (fx, fy) => {
+      ctx.save();
+      ctx.translate(fx, fy);
+      ctx.fillStyle = "#78350f";
+      ctx.fillRect(-2, -120, 4, 120);
+      // flag with wave
+      const t = performance.now() / 200;
+      ctx.fillStyle = "#ec4899";
+      ctx.shadowColor = "#ec4899"; ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.moveTo(2, -120);
+      for (let i = 0; i <= 40; i++) {
+        const x = 2 + i;
+        const y = -120 + Math.sin(t + i * 0.3) * 3;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(42, -90);
+      for (let i = 40; i >= 0; i--) {
+        const x = 2 + i;
+        const y = -90 + Math.sin(t + i * 0.3) * 3;
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // crown on flag
+      ctx.fillStyle = "#fde047";
+      ctx.font = "bold 22px serif";
+      ctx.fillText("👑", 8, -98);
+      ctx.restore();
+    };
+
+    // ============ MAIN LOOP ============
+    let raf, last = performance.now();
+
+    const tick = (now) => {
+      if (!stateRef.current.running) return;
+      const s = stateRef.current;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      const p = s.player;
+      const lvl = s.level;
+
+      if (!s.gameOver && !s.win) {
+        // INPUT
+        const k = s.keys;
+        let ax = 0;
+        if (k["arrowleft"] || k["a"] || k.left) ax -= 1;
+        if (k["arrowright"] || k["d"] || k.right) ax += 1;
+        if (ax !== 0) p.dir = ax > 0 ? 1 : -1;
+        p.vx = ax * MOVE_SPEED;
+
+        // physics
+        p.vy += GRAVITY * dt;
+        if (p.vy > MAX_FALL) p.vy = MAX_FALL;
+
+        // horizontal move with collision
+        p.x += p.vx * dt;
+        // Keep in level
+        if (p.x < 0) p.x = 0;
+        if (p.x + p.w > lvl.width) p.x = lvl.width - p.w;
+
+        // vertical move
+        p.y += p.vy * dt;
+
+        // Update moving platforms
+        for (const plat of lvl.platforms) {
+          if (plat.move) {
+            const m = plat.move;
+            if (m.axis === "y") {
+              plat.y += m.dir * m.speed * dt;
+              if (plat.y < m.min) { plat.y = m.min; m.dir = 1; }
+              if (plat.y > m.max) { plat.y = m.max; m.dir = -1; }
+            } else {
+              plat.x += m.dir * m.speed * dt;
+              if (plat.x < m.min) { plat.x = m.min; m.dir = 1; }
+              if (plat.x > m.max) { plat.x = m.max; m.dir = -1; }
+            }
+          }
+        }
+
+        // ground collision (any of the ground sections)
+        p.onGround = false;
+        for (const [gx1, gx2] of s.groundSections) {
+          if (p.x + p.w > gx1 && p.x < gx2 && p.y + p.h >= lvl.ground && p.y + p.h - p.vy * dt <= lvl.ground + 1) {
+            p.y = lvl.ground - p.h;
+            p.vy = 0; p.onGround = true; p.jumpsLeft = 2;
+          }
+        }
+        // platform collision (top only)
+        for (const plat of lvl.platforms) {
+          if (p.x + p.w > plat.x && p.x < plat.x + plat.w &&
+              p.vy >= 0 &&
+              p.y + p.h >= plat.y && p.y + p.h - p.vy * dt <= plat.y + 2) {
+            p.y = plat.y - p.h;
+            p.vy = 0; p.onGround = true; p.jumpsLeft = 2;
+            // Move with platform
+            if (plat.move && plat.move.axis === "x") {
+              p.x += plat.move.dir * plat.move.speed * dt;
+            }
+          }
+        }
+
+        // mushroom bounce
+        for (const m of lvl.mushrooms) {
+          if (p.x + p.w > m.x - 18 && p.x < m.x + 18 &&
+              p.y + p.h >= m.y - 4 && p.y + p.h <= m.y + 12 && p.vy > 0) {
+            p.vy = -900;
+            p.jumpsLeft = 2;
+            // burst
+            for (let i = 0; i < 14; i++) {
+              s.particles.push({
+                x: m.x, y: m.y - 10,
+                vx: (Math.random() - 0.5) * 200, vy: -Math.random() * 200,
+                life: 0.7, color: "#fda4af", size: 3,
+              });
+            }
+          }
+        }
+
+        // spikes - lose life
+        if (p.invuln <= 0) {
+          for (const sp of lvl.spikes) {
+            if (p.x + p.w > sp.x && p.x < sp.x + sp.w &&
+                p.y + p.h > lvl.ground - 24) {
+              s.lives -= 1;
+              p.invuln = 1.5; p.hurtFlash = 1.5;
+              p.vy = -400; p.vx = -p.dir * 200;
+              s.shake = 0.4;
+              if (s.lives <= 0) s.gameOver = true;
+              break;
+            }
+          }
+        }
+
+        // Pit fall: if below ground & not on ground sections
+        if (p.y > H + 100) {
+          if (p.invuln <= 0) {
+            s.lives -= 1;
+            if (s.lives <= 0) s.gameOver = true;
+          }
+          p.x = Math.max(100, p.x - 200);
+          p.y = 200; p.vy = 0; p.invuln = 1.5; p.hurtFlash = 1.5;
+        }
+
+        // Update enemies
+        for (const e of lvl.enemies) {
+          if (!e.alive) continue;
+          if (e.type === "goblin") {
+            e.x += e.vx * dt;
+            if (e.x < e.baseX - e.range) { e.x = e.baseX - e.range; e.vx *= -1; }
+            if (e.x > e.baseX + e.range) { e.x = e.baseX + e.range; e.vx *= -1; }
+          } else if (e.type === "bat") {
+            e.t += dt;
+            e.x += e.vx * dt;
+            e.y = e.baseY + Math.sin(e.t * 3) * 30;
+            if (e.x < e.baseX - e.range) { e.x = e.baseX - e.range; e.vx *= -1; }
+            if (e.x > e.baseX + e.range) { e.x = e.baseX + e.range; e.vx *= -1; }
+          }
+          // collide with player
+          if (p.x + p.w > e.x && p.x < e.x + e.w &&
+              p.y + p.h > e.y && p.y < e.y + e.h) {
+            // stomp from above
+            if (p.vy > 0 && p.y + p.h - e.y < 18 && e.type === "goblin") {
+              e.alive = false;
+              p.vy = -400;
+              s.score += 50;
+              for (let i = 0; i < 20; i++) {
+                s.particles.push({
+                  x: e.x + e.w / 2, y: e.y + e.h / 2,
+                  vx: (Math.random() - 0.5) * 250, vy: (Math.random() - 0.5) * 250,
+                  life: 0.8, color: "#84cc16", size: 3,
+                });
+              }
+            } else if (p.invuln <= 0) {
+              s.lives -= 1;
+              p.invuln = 1.5; p.hurtFlash = 1.5;
+              p.vy = -400; p.vx = (p.x < e.x ? -1 : 1) * 250;
+              s.shake = 0.4;
+              if (s.lives <= 0) s.gameOver = true;
+            }
+          }
+        }
+
+        // Crystal collection
+        for (const c of lvl.crystals) {
+          if (c.collected) continue;
+          c.t += dt * 2;
+          const dx = (c.x) - (p.x + p.w / 2);
+          const dy = (c.y) - (p.y + p.h / 2);
+          if (dx * dx + dy * dy < 24 * 24) {
+            c.collected = true;
+            s.gems += 1;
+            s.score += 20;
+            s.collectFlashes.push({ x: c.x, y: c.y, life: 0.6, text: "+20" });
+            for (let i = 0; i < 16; i++) {
+              s.particles.push({
+                x: c.x, y: c.y,
+                vx: (Math.random() - 0.5) * 250, vy: (Math.random() - 0.5) * 250,
+                life: 0.8, color: "#06b6d4", size: 3,
+              });
+            }
+          }
+        }
+
+        // Win!
+        if (p.x + p.w >= s.flagX && !s.win) {
+          s.win = true;
+          s.score += 500;
+          // burst
+          for (let i = 0; i < 80; i++) {
+            s.particles.push({
+              x: s.flagX, y: lvl.ground - 60,
+              vx: (Math.random() - 0.5) * 400, vy: (Math.random() - 0.5) * 400 - 100,
+              life: 1.5, color: ["#ec4899", "#a855f7", "#fbbf24", "#06b6d4"][i % 4], size: 4,
+            });
+          }
+        }
+
+        if (p.invuln > 0) p.invuln -= dt;
+        if (p.hurtFlash > 0) p.hurtFlash -= dt;
+        p.wing += dt * 14;
+        if (s.shake > 0) s.shake -= dt;
+
+        // Camera follow
+        const target = Math.max(0, Math.min(lvl.width - W, p.x - W / 3));
+        s.camera += (target - s.camera) * Math.min(1, dt * 6);
+      }
+
+      // ============ DRAW ============
+      // Background gradient (cave)
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, "#1e1b4b");
+      bg.addColorStop(0.4, "#4c1d95");
+      bg.addColorStop(1, "#831843");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      // shake
+      const shakeX = s.shake > 0 ? (Math.random() - 0.5) * 10 : 0;
+      const shakeY = s.shake > 0 ? (Math.random() - 0.5) * 10 : 0;
+      ctx.save();
+      ctx.translate(shakeX, shakeY);
+
+      // Far background — distant glowing crystals (parallax slow)
+      ctx.save();
+      const farOff = -s.camera * 0.2;
+      for (let i = 0; i < 25; i++) {
+        const bx = (i * 240 + farOff) % (W + 400) - 200;
+        const by = 40 + (i * 31) % 200;
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = ["#a855f7", "#06b6d4", "#ec4899"][i % 3];
+        ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.moveTo(bx, by - 8); ctx.lineTo(bx + 5, by); ctx.lineTo(bx, by + 8); ctx.lineTo(bx - 5, by);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      ctx.restore();
+
+      // Mid background — stalactites (parallax medium)
+      ctx.save();
+      const midOff = -s.camera * 0.5;
+      ctx.fillStyle = "#3b0764";
+      for (let i = 0; i < 30; i++) {
+        const sx = (i * 200 + midOff) % (W + 200) - 100;
+        const sh = 30 + (i * 17) % 60;
+        ctx.beginPath();
+        ctx.moveTo(sx - 15, 0);
+        ctx.lineTo(sx, sh);
+        ctx.lineTo(sx + 15, 0);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // World transform
+      ctx.save();
+      ctx.translate(-s.camera, 0);
+
+      // Ground sections with rocky texture
+      for (const [gx1, gx2] of s.groundSections) {
+        const w = gx2 - gx1;
+        const grad = ctx.createLinearGradient(0, lvl.ground, 0, H);
+        grad.addColorStop(0, "#7c2d12");
+        grad.addColorStop(0.5, "#451a03");
+        grad.addColorStop(1, "#1c1917");
+        ctx.fillStyle = grad;
+        ctx.fillRect(gx1, lvl.ground, w, H - lvl.ground);
+        // top edge highlight
+        ctx.fillStyle = "#a16207";
+        ctx.fillRect(gx1, lvl.ground, w, 4);
+        // little glowing moss dots
+        for (let i = 0; i < w / 30; i++) {
+          ctx.fillStyle = "#84cc16";
+          ctx.shadowColor = "#84cc16"; ctx.shadowBlur = 4;
+          ctx.beginPath(); ctx.arc(gx1 + i * 30 + 15, lvl.ground + 8, 1.5, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+      }
+
+      // Platforms - magical floating stones
+      for (const plat of lvl.platforms) {
+        const grad = ctx.createLinearGradient(plat.x, plat.y, plat.x, plat.y + plat.h);
+        grad.addColorStop(0, "#a78bfa");
+        grad.addColorStop(0.5, "#7c3aed");
+        grad.addColorStop(1, "#4c1d95");
+        ctx.fillStyle = grad;
+        ctx.shadowColor = "#a78bfa"; ctx.shadowBlur = 10;
+        // rounded
+        ctx.beginPath();
+        ctx.moveTo(plat.x + 6, plat.y);
+        ctx.lineTo(plat.x + plat.w - 6, plat.y);
+        ctx.quadraticCurveTo(plat.x + plat.w, plat.y, plat.x + plat.w, plat.y + 6);
+        ctx.lineTo(plat.x + plat.w, plat.y + plat.h - 6);
+        ctx.quadraticCurveTo(plat.x + plat.w, plat.y + plat.h, plat.x + plat.w - 6, plat.y + plat.h);
+        ctx.lineTo(plat.x + 6, plat.y + plat.h);
+        ctx.quadraticCurveTo(plat.x, plat.y + plat.h, plat.x, plat.y + plat.h - 6);
+        ctx.lineTo(plat.x, plat.y + 6);
+        ctx.quadraticCurveTo(plat.x, plat.y, plat.x + 6, plat.y);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // top sparkle line
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.fillRect(plat.x + 6, plat.y + 2, plat.w - 12, 2);
+      }
+
+      // Spikes
+      for (const sp of lvl.spikes) drawSpikes(sp.x, sp.y, sp.w);
+      // Mushrooms
+      for (const m of lvl.mushrooms) drawMushroom(m.x, m.y);
+      // Crystals
+      for (const c of lvl.crystals) {
+        if (!c.collected) drawCrystal(c.x, c.y, c.t);
+      }
+      // Enemies
+      for (const e of lvl.enemies) {
+        if (!e.alive) continue;
+        if (e.type === "goblin") drawGoblin(e);
+        else drawBat(e);
+      }
+
+      // Goal flag
+      drawFlag(s.flagX, lvl.ground);
+
+      // Player
+      drawFairy(p.x, p.y, p.dir, p.wing, p.hurtFlash);
+      // Trail particles when moving fast in air
+      if (!p.onGround && Math.random() < 0.4) {
+        s.particles.push({
+          x: p.x + p.w / 2 + (Math.random() - 0.5) * 6,
+          y: p.y + p.h / 2 + (Math.random() - 0.5) * 6,
+          vx: (Math.random() - 0.5) * 30, vy: 20 + Math.random() * 30,
+          life: 0.5, color: "#fde047", size: 2,
+        });
+      }
+
+      // Particles
+      s.particles.forEach((pt) => {
+        pt.x += pt.vx * dt; pt.y += pt.vy * dt;
+        pt.vy += 400 * dt; pt.life -= dt * 1.5;
+        if (pt.life > 0) {
+          ctx.globalAlpha = Math.max(0, pt.life);
+          ctx.fillStyle = pt.color;
+          ctx.shadowColor = pt.color; ctx.shadowBlur = 6;
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      });
+      s.particles = s.particles.filter((pt) => pt.life > 0);
+      ctx.globalAlpha = 1;
+
+      // Collect flashes
+      s.collectFlashes.forEach((f) => {
+        f.life -= dt;
+        f.y -= 30 * dt;
+        if (f.life > 0) {
+          ctx.globalAlpha = f.life;
+          ctx.fillStyle = "#fde047";
+          ctx.font = "bold 18px Fredoka, cursive";
+          ctx.textAlign = "center";
+          ctx.fillText(f.text, f.x, f.y);
+          ctx.globalAlpha = 1;
+        }
+      });
+      s.collectFlashes = s.collectFlashes.filter((f) => f.life > 0);
+
+      ctx.restore(); // camera
+
+      ctx.restore(); // shake
+
+      // Game over / Win overlay
+      if (s.gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#fda4af";
+        ctx.font = "bold 50px Fredoka, cursive";
+        ctx.textAlign = "center";
+        ctx.fillText("Try Again!", W / 2, H / 2 - 10);
+        ctx.fillStyle = "#fff";
+        ctx.font = "20px Quicksand, sans-serif";
+        ctx.fillText(`Crystals: ${s.gems}  •  Score: ${s.score}`, W / 2, H / 2 + 30);
+        ctx.fillText("Press R or tap to restart", W / 2, H / 2 + 60);
+      }
+      if (s.win) {
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#fde047";
+        ctx.shadowColor = "#fbbf24"; ctx.shadowBlur = 20;
+        ctx.font = "bold 60px Fredoka, cursive";
+        ctx.textAlign = "center";
+        ctx.fillText("YOU WIN!", W / 2, H / 2 - 10);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#fff";
+        ctx.font = "22px Quicksand, sans-serif";
+        ctx.fillText(`💎 ${s.gems} crystals  •  Score: ${s.score}`, W / 2, H / 2 + 30);
+      }
+
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    // sync HUD
+    const hudInt = setInterval(() => {
+      const s = stateRef.current;
+      setHud((h) => ({
+        score: s.score, lives: s.lives, gems: s.gems,
+        time: Math.max(0, h.time - 1)
+      }));
+    }, 1000);
+
+    // restart on R
+    const onR = (e) => {
+      if (e.key.toLowerCase() === "r" && (stateRef.current.gameOver || stateRef.current.win)) {
+        resetGame();
+      }
+    };
+    const resetGame = () => {
+      const s = stateRef.current;
+      s.player.x = 100; s.player.y = 400; s.player.vx = 0; s.player.vy = 0;
+      s.lives = 3; s.score = 0; s.gems = 0;
+      s.gameOver = false; s.win = false; s.camera = 0;
+      s.level.crystals.forEach((c) => c.collected = false);
+      s.level.enemies.forEach((e) => e.alive = true);
+    };
+    // Tap canvas to restart on iPad / mobile
+    const onCanvasTap = (e) => {
+      if (stateRef.current.gameOver || stateRef.current.win) {
+        e.preventDefault();
+        resetGame();
+      }
+    };
+    window.addEventListener("keydown", onR);
+    canvas.addEventListener("pointerdown", onCanvasTap);
+
+    return () => {
+      stateRef.current.running = false;
+      cancelAnimationFrame(raf);
+      clearInterval(hudInt);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("keydown", onR);
+      canvas.removeEventListener("pointerdown", onCanvasTap);
+    };
+  }, []);
+
+  // Time countdown
+  useEffect(() => {
+    if (hud.time <= 0) onFinish();
+  }, [hud.time, onFinish]);
+
+  // Lock body scroll when game is mounted (prevents iPad bounce)
+  useEffect(() => {
+    document.body.classList.add("in-game");
+    return () => document.body.classList.remove("in-game");
+  }, []);
+
+  // Touch button helpers
+  const press = (k) => () => { if (stateRef.current) stateRef.current.keys[k] = true; };
+  const release = (k) => () => { if (stateRef.current) stateRef.current.keys[k] = false; };
+  const tapJump = () => {
+    if (!stateRef.current) return;
+    const p = stateRef.current.player;
+    if (p.jumpsLeft > 0) {
+      p.vy = -560;
+      p.jumpsLeft -= 1;
+    }
+  };
+
+  const mins = Math.floor(hud.time / 60), secs = hud.time % 60;
+
+  return (
+    <div className="relative z-10 w-full flex flex-col items-center justify-start p-2"
+         style={{ minHeight: "100vh", maxHeight: "100vh" }}>
+      <div className="max-w-4xl w-full flex flex-col" style={{ height: "100%" }}>
+        <div className="flex flex-wrap justify-between mb-2 px-2 gap-2">
+          <div className="bg-white/95 rounded-full px-3 py-1 shadow-lg flex items-center gap-2"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <span className="text-purple-700 font-bold">💎 {hud.gems}</span>
+          </div>
+          <div className="bg-white/95 rounded-full px-3 py-1 shadow-lg"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <span className="text-purple-700 font-bold">{"❤️".repeat(Math.max(0, hud.lives))}</span>
+          </div>
+          <div className="bg-white/95 rounded-full px-3 py-1 shadow-lg"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <span className="text-purple-700 font-bold">⭐ {hud.score}</span>
+          </div>
+          <div className="bg-white/95 rounded-full px-3 py-1 shadow-lg"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <span className="text-purple-700 font-bold">⏰ {mins}:{secs.toString().padStart(2,"0")}</span>
+          </div>
+        </div>
+        <canvas ref={canvasRef} width={900} height={520}
+                className="game-canvas w-full rounded-3xl shadow-2xl border-4 border-pink-300"
+                style={{ background: "#1e1b4b", maxHeight: "60vh", objectFit: "contain" }} />
+
+        {/* Touch controls — large, easy targets for iPad */}
+        <div className="mt-3 flex justify-between items-center gap-3 px-2 select-none">
+          <div className="flex gap-3">
+            <HoldButton onPress={press("ArrowLeft")} onRelease={release("ArrowLeft")}
+                    className="rounded-full text-white shadow-lg active:scale-95 flex items-center justify-center"
+                    style={{ width: 78, height: 78, fontSize: 40, fontWeight: "bold",
+                             background: "linear-gradient(135deg,#a855f7,#7e22ce)",
+                             border: "3px solid rgba(255,255,255,0.4)" }}>◀</HoldButton>
+            <HoldButton onPress={press("ArrowRight")} onRelease={release("ArrowRight")}
+                    className="rounded-full text-white shadow-lg active:scale-95 flex items-center justify-center"
+                    style={{ width: 78, height: 78, fontSize: 40, fontWeight: "bold",
+                             background: "linear-gradient(135deg,#a855f7,#7e22ce)",
+                             border: "3px solid rgba(255,255,255,0.4)" }}>▶</HoldButton>
+          </div>
+          <HoldButton onTap={tapJump}
+                  className="rounded-full text-white shadow-xl active:scale-95 flex items-center justify-center"
+                  style={{ width: 96, height: 96, fontSize: 22, fontWeight: "bold",
+                           background: "linear-gradient(135deg,#ec4899,#be185d)",
+                           fontFamily: "'Fredoka', cursive",
+                           border: "3px solid rgba(255,255,255,0.4)" }}>
+            JUMP
+          </HoldButton>
+        </div>
+
+        <div className="mt-2 text-center text-white text-xs sm:text-sm bg-purple-900/80 backdrop-blur rounded-full px-4 py-2 inline-block mx-auto"
+             style={{ fontFamily: "'Quicksand', sans-serif" }}>
+          Hold ◀ ▶ to walk • Tap JUMP twice for double jump • Stomp goblins • Reach the flag!
+        </div>
+        <div className="text-center mt-2">
+          <button onClick={onFinish}
+                  className="touch-btn px-6 py-2 bg-white/90 rounded-full text-purple-700 font-bold hover:bg-white"
+                  style={{ fontFamily: "'Fredoka', cursive" }}>
+            Done playing →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================
+// GAME 2: Sky Princess Adventure — flying pegasus
+// Player rides a magical flying pegasus through cloud world.
+// Auto-scrolling, dodge clouds/storm, collect rainbow stars,
+// shoot heart magic at evil crows, boss-fight finale.
+// ==========================================================
+function SkyPrincessGame({ onFinish }) {
+  const canvasRef = useRef(null);
+  const [hud, setHud] = useState({ score: 0, hp: 5, time: 600 });
+  const stateRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+
+    stateRef.current = {
+      player: { x: 120, y: H / 2, w: 60, h: 50, vy: 0, dir: 1, wing: 0, invuln: 0 },
+      keys: {},
+      joyVx: 0, joyVy: 0,
+      bullets: [],
+      enemies: [],
+      stars: [],
+      clouds: [],
+      bgClouds: [],
+      particles: [],
+      score: 0, hp: 5,
+      running: true,
+      gameOver: false,
+      shake: 0,
+      bgT: 0,
+      worldT: 0,
+      spawnTimer: 0,
+      starTimer: 0,
+      lastShot: 0,
+    };
+
+    // initial bg clouds
+    for (let i = 0; i < 12; i++) {
+      stateRef.current.bgClouds.push({
+        x: Math.random() * W * 1.5,
+        y: Math.random() * H * 0.8,
+        size: 30 + Math.random() * 50,
+        speed: 20 + Math.random() * 30,
+        layer: Math.random() < 0.5 ? 0 : 1,
+      });
+    }
+
+    const onKeyDown = (e) => {
+      stateRef.current.keys[e.key.toLowerCase()] = true;
+      stateRef.current.keys[e.key] = true;
+      if ([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
+    };
+    const onKeyUp = (e) => {
+      stateRef.current.keys[e.key.toLowerCase()] = false;
+      stateRef.current.keys[e.key] = false;
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+
+    // ===== Drawing =====
+    const drawPegasus = (px, py, dir, wing, hurt) => {
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.scale(dir, 1);
+      if (hurt > 0 && Math.floor(hurt * 20) % 2 === 0) ctx.globalAlpha = 0.4;
+
+      // tail (rainbow flowing)
+      const colors = ["#ef4444", "#f59e0b", "#fbbf24", "#22c55e", "#3b82f6", "#a855f7"];
+      colors.forEach((c, i) => {
+        ctx.strokeStyle = c;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-30, -2 + i * 2);
+        const wave = Math.sin(performance.now() / 200 + i) * 4;
+        ctx.quadraticCurveTo(-50, 0 + i * 2 + wave, -55, 8 + i * 3);
+        ctx.stroke();
+      });
+
+      // body (white pegasus)
+      const body = ctx.createLinearGradient(0, -10, 0, 20);
+      body.addColorStop(0, "#fff");
+      body.addColorStop(1, "#e9d5ff");
+      ctx.fillStyle = body;
+      ctx.shadowColor = "rgba(236,72,153,0.5)"; ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.ellipse(0, 5, 25, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // back legs hinted
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(-15, 14, 5, 12);
+      ctx.fillRect(-5, 14, 5, 12);
+      ctx.fillRect(8, 14, 5, 12);
+      ctx.fillRect(15, 14, 5, 12);
+
+      // wings (BIG, flapping)
+      const flap = Math.sin(wing) * 0.8 + 0.5;
+      const wingGrad = ctx.createLinearGradient(0, -25, 0, 5);
+      wingGrad.addColorStop(0, "#fff");
+      wingGrad.addColorStop(0.5, "#fbcfe8");
+      wingGrad.addColorStop(1, "#a855f7");
+      ctx.fillStyle = wingGrad;
+      ctx.shadowColor = "#fff"; ctx.shadowBlur = 12;
+      // upper wing
+      ctx.beginPath();
+      ctx.moveTo(-5, 0);
+      ctx.quadraticCurveTo(-15, -25 - flap * 15, -25, -30 - flap * 10);
+      ctx.quadraticCurveTo(0, -10, 5, 0);
+      ctx.fill();
+      // lower wing detail
+      ctx.beginPath();
+      ctx.moveTo(-5, 0);
+      ctx.quadraticCurveTo(-10, -10 - flap * 8, -15, -5);
+      ctx.quadraticCurveTo(-5, -5, 5, 0);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // head
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.ellipse(22, -5, 12, 9, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      // ears
+      ctx.beginPath();
+      ctx.moveTo(20, -14); ctx.lineTo(22, -22); ctx.lineTo(26, -14); ctx.fill();
+      // horn (golden)
+      const horn = ctx.createLinearGradient(28, -28, 32, -10);
+      horn.addColorStop(0, "#fde047"); horn.addColorStop(1, "#ca8a04");
+      ctx.fillStyle = horn;
+      ctx.beginPath();
+      ctx.moveTo(27, -12); ctx.lineTo(30, -28); ctx.lineTo(33, -12); ctx.closePath();
+      ctx.fill();
+      // mane (rainbow flowing)
+      colors.forEach((c, i) => {
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        const wave = Math.sin(performance.now() / 200 + i * 0.5) * 3;
+        ctx.ellipse(8 - i * 2, -8 + i * 2 + wave, 10 - i, 4, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      // eye
+      ctx.fillStyle = "#1e1b4b";
+      ctx.beginPath(); ctx.arc(25, -5, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(25.6, -5.6, 0.7, 0, Math.PI * 2); ctx.fill();
+
+      // PRINCESS RIDER
+      // dress
+      const dress = ctx.createLinearGradient(0, -25, 0, 0);
+      dress.addColorStop(0, "#fbcfe8"); dress.addColorStop(1, "#ec4899");
+      ctx.fillStyle = dress;
+      ctx.beginPath();
+      ctx.moveTo(-6, -8);
+      ctx.lineTo(-4, -22);
+      ctx.lineTo(4, -22);
+      ctx.lineTo(6, -8);
+      ctx.closePath();
+      ctx.fill();
+      // arms
+      ctx.fillStyle = "#fef3c7";
+      ctx.fillRect(-6, -18, 3, 8);
+      ctx.fillRect(3, -18, 3, 8);
+      // head
+      ctx.fillStyle = "#fef3c7";
+      ctx.beginPath();
+      ctx.arc(0, -28, 6, 0, Math.PI * 2); ctx.fill();
+      // hair
+      ctx.fillStyle = "#a855f7";
+      ctx.beginPath();
+      ctx.arc(0, -30, 7, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(-6, -30, 12, 4);
+      // crown
+      ctx.fillStyle = "#fde047";
+      ctx.shadowColor = "#fbbf24"; ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(-4, -34); ctx.lineTo(-2, -38); ctx.lineTo(0, -34);
+      ctx.lineTo(2, -38); ctx.lineTo(4, -34); ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // face dots
+      ctx.fillStyle = "#1e1b4b";
+      ctx.beginPath(); ctx.arc(-1.5, -28, 0.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(1.5, -28, 0.8, 0, Math.PI * 2); ctx.fill();
+
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    };
+
+    const drawCrow = (e, t) => {
+      ctx.save();
+      ctx.translate(e.x, e.y);
+      const flap = Math.sin(t * 12) * 0.6 + 0.4;
+      // body
+      ctx.fillStyle = "#1e1b4b";
+      ctx.shadowColor = "#000"; ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 16, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // wings
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-10, -15 * flap, -22, -8);
+      ctx.quadraticCurveTo(-10, 4, 0, 0);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(10, -15 * flap, 22, -8);
+      ctx.quadraticCurveTo(10, 4, 0, 0);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // beak
+      ctx.fillStyle = "#f59e0b";
+      ctx.beginPath();
+      ctx.moveTo(-16, -2); ctx.lineTo(-22, 0); ctx.lineTo(-16, 2); ctx.fill();
+      // eye
+      ctx.fillStyle = "#dc2626";
+      ctx.shadowColor = "#dc2626"; ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.arc(-10, -3, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    };
+
+    const drawCloud = (c) => {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.fillStyle = c.dark ? "rgba(71,85,105,0.85)" : "rgba(255,255,255,0.9)";
+      if (c.dark) {
+        ctx.shadowColor = "#475569"; ctx.shadowBlur = 14;
+      } else {
+        ctx.shadowColor = "rgba(255,255,255,0.7)"; ctx.shadowBlur = 10;
+      }
+      const r = c.size;
+      ctx.beginPath();
+      ctx.arc(-r * 0.5, 0, r * 0.6, 0, Math.PI * 2);
+      ctx.arc(0, -r * 0.2, r * 0.7, 0, Math.PI * 2);
+      ctx.arc(r * 0.5, 0, r * 0.6, 0, Math.PI * 2);
+      ctx.arc(0, r * 0.2, r * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // lightning bolt for storm
+      if (c.dark && c.flash > 0) {
+        ctx.fillStyle = "#fde047";
+        ctx.shadowColor = "#fde047"; ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.moveTo(0, r * 0.3);
+        ctx.lineTo(-3, r * 0.7);
+        ctx.lineTo(2, r * 0.7);
+        ctx.lineTo(-1, r);
+        ctx.lineTo(4, r * 0.65);
+        ctx.lineTo(-1, r * 0.65);
+        ctx.lineTo(2, r * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      ctx.restore();
+    };
+
+    const drawStar = (s) => {
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(s.rot);
+      const r = s.size;
+      // glow
+      ctx.shadowColor = s.color; ctx.shadowBlur = 18;
+      const grad = ctx.createRadialGradient(0, 0, 2, 0, 0, r);
+      grad.addColorStop(0, "#fff");
+      grad.addColorStop(1, s.color);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const ang = (Math.PI / 5) * i - Math.PI / 2;
+        const rad = i % 2 === 0 ? r : r * 0.45;
+        const x = Math.cos(ang) * rad, y = Math.sin(ang) * rad;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    };
+
+    const drawHeart = (b) => {
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      const t = performance.now() / 100;
+      ctx.rotate(t);
+      ctx.fillStyle = "#ec4899";
+      ctx.shadowColor = "#ec4899"; ctx.shadowBlur = 12;
+      const s = b.size / 16;
+      ctx.beginPath();
+      ctx.moveTo(0, 5 * s);
+      ctx.bezierCurveTo(-12 * s, -8 * s, -16 * s, 4 * s, 0, 14 * s);
+      ctx.bezierCurveTo(16 * s, 4 * s, 12 * s, -8 * s, 0, 5 * s);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    };
+
+    let raf, last = performance.now();
+
+    const tick = (now) => {
+      if (!stateRef.current.running) return;
+      const s = stateRef.current;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      s.bgT += dt;
+      s.worldT += dt;
+
+      // Sky gradient (shifts with time)
+      const tShift = Math.sin(s.bgT * 0.05) * 0.5 + 0.5;
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, `rgb(${135 + tShift * 30}, ${206 - tShift * 50}, ${235 - tShift * 80})`);
+      sky.addColorStop(0.5, `rgb(${250 - tShift * 30}, ${207}, ${232})`);
+      sky.addColorStop(1, `rgb(${219}, ${234}, ${254})`);
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
+
+      // Sun with rays
+      ctx.save();
+      ctx.translate(W - 90, 90);
+      const rayT = s.worldT * 0.3;
+      ctx.fillStyle = "rgba(253, 224, 71, 0.3)";
+      for (let i = 0; i < 8; i++) {
+        ctx.save();
+        ctx.rotate(rayT + (i * Math.PI) / 4);
+        ctx.fillRect(-3, 40, 6, 30);
+        ctx.restore();
+      }
+      ctx.fillStyle = "#fde047";
+      ctx.shadowColor = "#fbbf24"; ctx.shadowBlur = 25;
+      ctx.beginPath();
+      ctx.arc(0, 0, 35, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+
+      // Background clouds (parallax slow)
+      s.bgClouds.forEach((c) => {
+        c.x -= c.speed * dt * (c.layer === 0 ? 0.4 : 0.7);
+        if (c.x < -100) { c.x = W + 100; c.y = Math.random() * H * 0.7; }
+        ctx.globalAlpha = c.layer === 0 ? 0.5 : 0.8;
+        drawCloud({ x: c.x, y: c.y, size: c.size, dark: false, flash: 0 });
+        ctx.globalAlpha = 1;
+      });
+
+      if (!s.gameOver) {
+        // Player input — combine keyboard with analog joystick
+        const k = s.keys;
+        let ay = 0, ax = 0;
+        if (k["arrowup"] || k["w"]) ay -= 1;
+        if (k["arrowdown"] || k["s"]) ay += 1;
+        if (k["arrowleft"] || k["a"]) ax -= 1;
+        if (k["arrowright"] || k["d"]) ax += 1;
+        // Joystick (analog, overrides if active)
+        if (s.joyVx !== undefined && (Math.abs(s.joyVx) > 0.05 || Math.abs(s.joyVy) > 0.05)) {
+          ax = s.joyVx;
+          ay = s.joyVy;
+        }
+        const speed = 280;
+        s.player.y += ay * speed * dt;
+        s.player.x += ax * speed * dt;
+        s.player.x = Math.max(40, Math.min(W - 40, s.player.x));
+        s.player.y = Math.max(40, Math.min(H - 40, s.player.y));
+        if (Math.abs(ax) > 0.1) s.player.dir = ax > 0 ? 1 : -1;
+        s.player.wing += dt * 15;
+
+        // Shoot (keyboard space — touch fire is via auto-fire loop)
+        if ((k[" "] || k["spacebar"] || k["space"]) && now - s.lastShot > 220) {
+          s.lastShot = now;
+          s.bullets.push({ x: s.player.x + 30, y: s.player.y, vx: 600, size: 14, life: 2 });
+        }
+
+        // Spawn enemies
+        s.spawnTimer -= dt;
+        if (s.spawnTimer <= 0) {
+          s.spawnTimer = 1.2 - Math.min(0.8, s.worldT / 60);
+          const r = Math.random();
+          if (r < 0.55) {
+            // crow
+            s.enemies.push({
+              type: "crow", x: W + 30, y: 80 + Math.random() * (H - 160),
+              w: 32, h: 24, vx: -160 - Math.random() * 60, vy: (Math.random() - 0.5) * 30,
+              hp: 1, sin: Math.random() * Math.PI * 2,
+            });
+          } else if (r < 0.85) {
+            // dark cloud
+            s.enemies.push({
+              type: "cloud", x: W + 60, y: 80 + Math.random() * (H - 160),
+              w: 70, h: 50, vx: -100, vy: 0, hp: 2, dark: true,
+              flash: 1, size: 36,
+            });
+          } else {
+            // crow squadron
+            for (let i = 0; i < 3; i++) {
+              s.enemies.push({
+                type: "crow", x: W + 30 + i * 50, y: 100 + i * 60,
+                w: 32, h: 24, vx: -180, vy: 0, hp: 1, sin: i,
+              });
+            }
+          }
+        }
+
+        // Spawn stars
+        s.starTimer -= dt;
+        if (s.starTimer <= 0) {
+          s.starTimer = 0.6;
+          const colors = ["#fbbf24", "#ec4899", "#a855f7", "#06b6d4", "#22c55e"];
+          s.stars.push({
+            x: W + 20, y: 80 + Math.random() * (H - 160),
+            vx: -180, size: 14, color: colors[Math.floor(Math.random() * colors.length)],
+            rot: 0, vrot: (Math.random() - 0.5) * 4,
+          });
+        }
+
+        // Update bullets
+        s.bullets.forEach((b) => { b.x += b.vx * dt; b.life -= dt; });
+        s.bullets = s.bullets.filter((b) => b.life > 0 && b.x < W + 30);
+
+        // Update enemies
+        s.enemies.forEach((e) => {
+          e.x += e.vx * dt;
+          if (e.type === "crow") {
+            e.sin += dt * 4;
+            e.y += Math.sin(e.sin) * 30 * dt;
+          }
+          if (e.flash !== undefined) {
+            e.flash -= dt;
+            if (e.flash <= 0) e.flash = 1.5 + Math.random();
+          }
+          // collide with bullets
+          s.bullets.forEach((b) => {
+            if (b.dead) return;
+            const dx = b.x - e.x, dy = b.y - e.y;
+            if (dx * dx + dy * dy < (b.size + e.w / 2) * (b.size + e.w / 2)) {
+              b.dead = true;
+              e.hp -= 1;
+              for (let i = 0; i < 8; i++) {
+                s.particles.push({
+                  x: b.x, y: b.y,
+                  vx: (Math.random() - 0.5) * 200, vy: (Math.random() - 0.5) * 200,
+                  life: 0.5, color: "#ec4899", size: 2,
+                });
+              }
+              if (e.hp <= 0) {
+                e.dead = true;
+                s.score += e.type === "cloud" ? 30 : 15;
+                for (let i = 0; i < 18; i++) {
+                  s.particles.push({
+                    x: e.x, y: e.y,
+                    vx: (Math.random() - 0.5) * 280, vy: (Math.random() - 0.5) * 280,
+                    life: 0.9, color: e.type === "cloud" ? "#a855f7" : "#fbbf24", size: 3,
+                  });
+                }
+              }
+            }
+          });
+          // collide with player
+          if (s.player.invuln <= 0) {
+            const dx = s.player.x - e.x, dy = s.player.y - e.y;
+            if (Math.abs(dx) < 28 + e.w / 2 && Math.abs(dy) < 22 + e.h / 2) {
+              s.hp -= 1;
+              s.player.invuln = 1.5;
+              s.shake = 0.3;
+              if (s.hp <= 0) s.gameOver = true;
+              for (let i = 0; i < 16; i++) {
+                s.particles.push({
+                  x: s.player.x, y: s.player.y,
+                  vx: (Math.random() - 0.5) * 250, vy: (Math.random() - 0.5) * 250,
+                  life: 0.8, color: "#ef4444", size: 3,
+                });
+              }
+            }
+          }
+        });
+        s.enemies = s.enemies.filter((e) => !e.dead && e.x > -100);
+        s.bullets = s.bullets.filter((b) => !b.dead);
+
+        // Update stars
+        s.stars.forEach((st) => {
+          st.x += st.vx * dt;
+          st.rot += st.vrot * dt;
+          const dx = s.player.x - st.x, dy = s.player.y - st.y;
+          if (Math.sqrt(dx * dx + dy * dy) < 32) {
+            st.dead = true;
+            s.score += 10;
+            for (let i = 0; i < 14; i++) {
+              s.particles.push({
+                x: st.x, y: st.y,
+                vx: (Math.random() - 0.5) * 220, vy: (Math.random() - 0.5) * 220,
+                life: 0.7, color: st.color, size: 3,
+              });
+            }
+          }
+        });
+        s.stars = s.stars.filter((st) => !st.dead && st.x > -30);
+
+        if (s.player.invuln > 0) s.player.invuln -= dt;
+        if (s.shake > 0) s.shake -= dt;
+      }
+
+      // shake
+      const shx = s.shake > 0 ? (Math.random() - 0.5) * 12 : 0;
+      const shy = s.shake > 0 ? (Math.random() - 0.5) * 12 : 0;
+      ctx.save();
+      ctx.translate(shx, shy);
+
+      // Draw stars
+      s.stars.forEach(drawStar);
+      // Draw enemies
+      s.enemies.forEach((e) => {
+        if (e.type === "crow") drawCrow(e, s.worldT);
+        else drawCloud(e);
+      });
+      // Draw bullets (heart magic)
+      s.bullets.forEach(drawHeart);
+      // Draw player
+      drawPegasus(s.player.x, s.player.y, s.player.dir, s.player.wing, s.player.invuln);
+      // sparkle trail behind pegasus
+      if (Math.random() < 0.6 && !s.gameOver) {
+        const colors = ["#ec4899", "#a855f7", "#fbbf24", "#06b6d4"];
+        s.particles.push({
+          x: s.player.x - 30, y: s.player.y + (Math.random() - 0.5) * 10,
+          vx: -80 - Math.random() * 50, vy: (Math.random() - 0.5) * 40,
+          life: 0.6, color: colors[Math.floor(Math.random() * colors.length)], size: 3,
+        });
+      }
+
+      // Draw particles
+      s.particles.forEach((p) => {
+        p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 100 * dt; p.life -= dt * 1.4;
+        if (p.life > 0) {
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.shadowColor = p.color; ctx.shadowBlur = 6;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      });
+      s.particles = s.particles.filter((p) => p.life > 0);
+      ctx.globalAlpha = 1;
+
+      ctx.restore(); // shake
+
+      // Game over overlay
+      if (s.gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#fda4af";
+        ctx.font = "bold 50px Fredoka, cursive";
+        ctx.textAlign = "center";
+        ctx.fillText("Time to Rest!", W / 2, H / 2 - 10);
+        ctx.fillStyle = "#fff";
+        ctx.font = "22px Quicksand, sans-serif";
+        ctx.fillText(`Score: ${s.score}`, W / 2, H / 2 + 30);
+        ctx.fillText("Press R or tap to fly again", W / 2, H / 2 + 60);
+      }
+
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const hudInt = setInterval(() => {
+      const s = stateRef.current;
+      setHud((h) => ({ score: s.score, hp: s.hp, time: Math.max(0, h.time - 1) }));
+    }, 1000);
+
+    const resetGame = () => {
+      const s = stateRef.current;
+      s.player.x = 120; s.player.y = H / 2;
+      s.hp = 5; s.score = 0; s.gameOver = false;
+      s.enemies = []; s.bullets = []; s.stars = []; s.particles = [];
+      s.worldT = 0;
+    };
+    const onR = (e) => {
+      if (e.key.toLowerCase() === "r" && stateRef.current.gameOver) resetGame();
+    };
+    const onCanvasTap = (e) => {
+      if (stateRef.current.gameOver) {
+        e.preventDefault();
+        resetGame();
+      }
+    };
+    window.addEventListener("keydown", onR);
+    canvas.addEventListener("pointerdown", onCanvasTap);
+
+    return () => {
+      stateRef.current.running = false;
+      cancelAnimationFrame(raf);
+      clearInterval(hudInt);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("keydown", onR);
+      canvas.removeEventListener("pointerdown", onCanvasTap);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (hud.time <= 0) onFinish();
+  }, [hud.time, onFinish]);
+
+  // Lock body scroll when game is mounted
+  useEffect(() => {
+    document.body.classList.add("in-game");
+    return () => document.body.classList.remove("in-game");
+  }, []);
+
+  const shoot = () => {
+    if (!stateRef.current) return;
+    const s = stateRef.current;
+    if (performance.now() - s.lastShot > 220 && !s.gameOver) {
+      s.lastShot = performance.now();
+      s.bullets.push({ x: s.player.x + 30, y: s.player.y, vx: 600, size: 14, life: 2 });
+    }
+  };
+
+  // Virtual joystick state
+  const joyRef = useRef(null);
+  const knobRef = useRef(null);
+  const joyActiveRef = useRef(false);
+  const joyPointerRef = useRef(null);
+  const fireHoldRef = useRef(false);
+
+  useEffect(() => {
+    const joy = joyRef.current;
+    const knob = knobRef.current;
+    if (!joy || !knob) return;
+
+    const center = () => {
+      const r = joy.getBoundingClientRect();
+      return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, max: r.width / 2 - 18 };
+    };
+
+    const setVector = (dx, dy) => {
+      if (!stateRef.current) return;
+      const s = stateRef.current;
+      s.joyVx = dx;
+      s.joyVy = dy;
+      // also map to keys for redundancy (so existing logic works)
+      s.keys["ArrowLeft"] = dx < -0.2;
+      s.keys["ArrowRight"] = dx > 0.2;
+      s.keys["ArrowUp"] = dy < -0.2;
+      s.keys["ArrowDown"] = dy > 0.2;
+    };
+
+    const reset = () => {
+      knob.style.transform = "translate(-50%,-50%)";
+      setVector(0, 0);
+      joyActiveRef.current = false;
+      joyPointerRef.current = null;
+    };
+
+    const onDown = (e) => {
+      e.preventDefault();
+      if (joyActiveRef.current) return;
+      joyActiveRef.current = true;
+      joyPointerRef.current = e.pointerId ?? "touch";
+      try { joy.setPointerCapture && e.pointerId !== undefined && joy.setPointerCapture(e.pointerId); } catch (err) {}
+      onMove(e);
+    };
+    const onMove = (e) => {
+      if (!joyActiveRef.current) return;
+      e.preventDefault();
+      const t = e.touches ? e.touches[0] : e;
+      const { cx, cy, max } = center();
+      let dx = t.clientX - cx;
+      let dy = t.clientY - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > max) { dx = (dx / dist) * max; dy = (dy / dist) * max; }
+      knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      setVector(dx / max, dy / max);
+    };
+    const onUp = (e) => {
+      if (!joyActiveRef.current) return;
+      e.preventDefault();
+      reset();
+    };
+
+    const supportsPointer = "PointerEvent" in window;
+    if (supportsPointer) {
+      joy.addEventListener("pointerdown", onDown);
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    } else {
+      joy.addEventListener("touchstart", onDown, { passive: false });
+      window.addEventListener("touchmove", onMove, { passive: false });
+      window.addEventListener("touchend", onUp, { passive: false });
+      window.addEventListener("touchcancel", onUp, { passive: false });
+      joy.addEventListener("mousedown", onDown);
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+    }
+
+    return () => {
+      if (supportsPointer) {
+        joy.removeEventListener("pointerdown", onDown);
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+      } else {
+        joy.removeEventListener("touchstart", onDown);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onUp);
+        window.removeEventListener("touchcancel", onUp);
+        joy.removeEventListener("mousedown", onDown);
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+      }
+    };
+  }, []);
+
+  // Auto-fire while fire button is held
+  useEffect(() => {
+    let raf;
+    const loop = () => {
+      if (fireHoldRef.current) shoot();
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const mins = Math.floor(hud.time / 60), secs = hud.time % 60;
+
+  return (
+    <div className="relative z-10 w-full flex flex-col items-center justify-start p-2"
+         style={{ minHeight: "100vh", maxHeight: "100vh" }}>
+      <div className="max-w-4xl w-full flex flex-col" style={{ height: "100%" }}>
+        <div className="flex flex-wrap justify-between mb-2 px-2 gap-2">
+          <div className="bg-white/95 rounded-full px-3 py-1 shadow-lg flex items-center gap-2"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <span className="text-purple-700 font-bold">{"💖".repeat(Math.max(0, hud.hp))}</span>
+          </div>
+          <div className="bg-white/95 rounded-full px-3 py-1 shadow-lg"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <span className="text-purple-700 font-bold">⭐ {hud.score}</span>
+          </div>
+          <div className="bg-white/95 rounded-full px-3 py-1 shadow-lg"
+               style={{ fontFamily: "'Fredoka', cursive" }}>
+            <span className="text-purple-700 font-bold">⏰ {mins}:{secs.toString().padStart(2,"0")}</span>
+          </div>
+        </div>
+        <canvas ref={canvasRef} width={900} height={520}
+                className="game-canvas w-full rounded-3xl shadow-2xl border-4 border-pink-300"
+                style={{ background: "#bae6fd", maxHeight: "60vh", objectFit: "contain" }} />
+
+        {/* Touch controls: virtual joystick + auto-fire button */}
+        <div className="mt-3 flex justify-between items-center gap-2 px-2 select-none" style={{ minHeight: 140 }}>
+          {/* Joystick */}
+          <div ref={joyRef}
+               className="touch-btn relative rounded-full"
+               style={{
+                 width: 130, height: 130,
+                 background: "radial-gradient(circle at 30% 30%, rgba(168,85,247,0.5), rgba(126,34,206,0.85))",
+                 border: "4px solid rgba(255,255,255,0.4)",
+                 boxShadow: "0 6px 20px rgba(126,34,206,0.5)",
+               }}>
+            <div ref={knobRef}
+                 className="absolute"
+                 style={{
+                   left: "50%", top: "50%", width: 56, height: 56,
+                   marginLeft: 0, marginTop: 0,
+                   transform: "translate(-50%,-50%)",
+                   background: "radial-gradient(circle at 35% 35%, #fff, #fbcfe8)",
+                   border: "3px solid #ec4899",
+                   borderRadius: "50%",
+                   boxShadow: "0 4px 12px rgba(236,72,153,0.6)",
+                   pointerEvents: "none",
+                 }} />
+          </div>
+
+          <HoldButton
+            onPress={() => { fireHoldRef.current = true; shoot(); }}
+            onRelease={() => { fireHoldRef.current = false; }}
+            className="rounded-full text-white shadow-xl active:scale-95 flex items-center justify-center"
+            style={{ width: 110, height: 110, fontSize: 44,
+                     background: "linear-gradient(135deg,#ec4899,#be185d)",
+                     border: "4px solid rgba(255,255,255,0.4)",
+                     boxShadow: "0 6px 20px rgba(190,24,93,0.6)",
+                     fontFamily: "'Fredoka', cursive" }}>
+            💖
+          </HoldButton>
+        </div>
+
+        <div className="mt-2 text-center text-white text-xs sm:text-sm bg-purple-900/80 backdrop-blur rounded-full px-4 py-2 inline-block mx-auto"
+             style={{ fontFamily: "'Quicksand', sans-serif" }}>
+          Drag joystick to fly • Hold 💖 to shoot heart magic • Collect stars • Defeat crows & storms!
+        </div>
+        <div className="text-center mt-2">
+          <button onClick={onFinish}
+                  className="touch-btn px-6 py-2 bg-white/90 rounded-full text-purple-700 font-bold hover:bg-white"
+                  style={{ fontFamily: "'Fredoka', cursive" }}>
+            Get my certificate →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================
+// FINAL SCREEN with confetti & certificate
+// ==========================================================
+function FinalScreen({ score, name, onPlayGame, gamePlayed, total }) {
+  const champion = score > 36;
+  const great = score >= 30;
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowConfetti(false), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const downloadCert = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200; canvas.height = 850;
+    const ctx = canvas.getContext("2d");
+    const grad = ctx.createLinearGradient(0, 0, 1200, 850);
+    grad.addColorStop(0, "#fce7f3"); grad.addColorStop(0.5, "#e9d5ff"); grad.addColorStop(1, "#dbeafe");
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 850);
+    ctx.strokeStyle = "#ec4899"; ctx.lineWidth = 8; ctx.strokeRect(40, 40, 1120, 770);
+    ctx.strokeStyle = "#a855f7"; ctx.lineWidth = 3; ctx.strokeRect(60, 60, 1080, 730);
+    const drawStar = (cx, cy, r, color) => {
+      ctx.fillStyle = color; ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const ang = (Math.PI / 5) * i - Math.PI / 2;
+        const rad = i % 2 === 0 ? r : r * 0.45;
+        const x = cx + Math.cos(ang) * rad; const y = cy + Math.sin(ang) * rad;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.fill();
+    };
+    drawStar(120, 120, 40, "#fbbf24");
+    drawStar(1080, 120, 40, "#ec4899");
+    drawStar(120, 730, 40, "#a855f7");
+    drawStar(1080, 730, 40, "#3b82f6");
+    ctx.fillStyle = "#831843"; ctx.textAlign = "center";
+    ctx.font = "bold 72px serif"; ctx.fillText("Certificate of Achievement", 600, 220);
+    ctx.fillStyle = "#7e22ce"; ctx.font = "italic 32px serif";
+    ctx.fillText("Math Quest Champion (Advanced)", 600, 280);
+    ctx.fillStyle = "#1e1b4b"; ctx.font = "28px serif";
+    ctx.fillText("This certificate is proudly presented to", 600, 360);
+    ctx.fillStyle = "#be185d"; ctx.font = "bold 64px cursive";
+    ctx.fillText(name || "Math Star", 600, 450);
+    ctx.strokeStyle = "#a855f7"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(300, 470); ctx.lineTo(900, 470); ctx.stroke();
+    ctx.fillStyle = "#1e1b4b"; ctx.font = "26px serif";
+    ctx.fillText("for outstanding excellence in advanced 4th-grade math by scoring", 600, 530);
+    ctx.fillStyle = "#ec4899"; ctx.font = "bold 48px serif";
+    ctx.fillText(`${score} out of ${total}`, 600, 600);
+    ctx.fillStyle = "#1e1b4b"; ctx.font = "italic 24px serif";
+    ctx.fillText("on the Illinois IAR Advanced Math Practice Quest!", 600, 645);
+    const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    ctx.fillStyle = "#7e22ce"; ctx.font = "20px serif";
+    ctx.fillText(`Awarded on ${date}`, 600, 720);
+    ctx.fillStyle = "#be185d"; ctx.font = "italic 22px serif";
+    ctx.fillText("✨ You are a true Math Quest Champion ✨", 600, 760);
+
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `${name || "MathStar"}-Certificate.png`; a.click();
+      URL.revokeObjectURL(url);
+    });
+  };
+
+  return (
+    <div className="relative z-10 min-h-screen flex items-center justify-center p-6 overflow-hidden">
+      {showConfetti && champion && (
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          {Array.from({ length: 80 }).map((_, i) => {
+            const colors = ["#ec4899", "#a855f7", "#fbbf24", "#3b82f6", "#22c55e", "#06b6d4"];
+            return (
+              <div key={i} className="absolute"
+                   style={{
+                     left: `${(i * 11) % 100}%`, top: "-30px",
+                     width: "10px", height: "14px",
+                     background: colors[i % colors.length],
+                     animation: `confetti ${2 + (i % 3)}s linear ${(i % 10) * 0.15}s infinite`,
+                     borderRadius: "2px",
+                   }} />
+            );
+          })}
+        </div>
+      )}
+
+      <div className="bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-10 max-w-xl w-full border-4 border-pink-200 text-center"
+           style={{ boxShadow: "0 25px 60px -15px rgba(236,72,153,0.4)" }}>
+        {champion ? (
+          <div>
+            <div className="flex justify-center mb-4">
+              <div className="relative" style={{ animation: "spinSlow 4s linear infinite" }}>
+                <Crown size={90} className="text-yellow-400" fill="currentColor"
+                       style={{ filter: "drop-shadow(0 0 20px rgba(250,204,21,0.8))" }} />
+              </div>
+            </div>
+            <h2 className="text-5xl mb-2 font-black"
+                style={{ fontFamily: "'Fredoka', cursive",
+                         background: "linear-gradient(135deg,#ec4899,#a855f7,#3b82f6)",
+                         WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              CHAMPION!
+            </h2>
+            <p className="text-purple-700 text-2xl mb-2" style={{ fontFamily: "'Fredoka', cursive" }}>
+              🏆 {name}, you are AMAZING! 🏆
+            </p>
+            <p className="text-purple-600 text-lg mb-5" style={{ fontFamily: "'Fredoka', cursive" }}>
+              You scored <strong>{score} / {total}</strong>!
+            </p>
+            {!gamePlayed ? (
+              <div>
+                <div className="bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 rounded-2xl p-4 mb-5 border-2 border-purple-300">
+                  <p className="text-purple-800">
+                    🦄 You unlocked <strong>Sky Princess Adventure</strong>! Fly your magical pegasus, shoot heart magic, defeat the storm clouds! 🌈
+                  </p>
+                </div>
+                <button onClick={onPlayGame}
+                        className="w-full py-4 rounded-2xl text-white text-xl font-bold transition-all hover:scale-105 active:scale-95 mb-3"
+                        style={{ fontFamily: "'Fredoka', cursive",
+                                 background: "linear-gradient(135deg,#ec4899,#a855f7,#3b82f6)",
+                                 boxShadow: "0 10px 25px -5px rgba(168,85,247,0.5)" }}>
+                  Take Flight! 🦄
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="bg-gradient-to-r from-yellow-100 to-pink-100 rounded-2xl p-4 mb-5 border-2 border-yellow-300">
+                  <p className="text-purple-800 font-bold">
+                    🎉 Download your Champion certificate! 🎉
+                  </p>
+                </div>
+                <button onClick={downloadCert}
+                        className="w-full py-4 rounded-2xl text-white text-xl font-bold transition-all hover:scale-105 active:scale-95"
+                        style={{ fontFamily: "'Fredoka', cursive",
+                                 background: "linear-gradient(135deg,#f59e0b,#ec4899)",
+                                 boxShadow: "0 10px 25px -5px rgba(245,158,11,0.5)" }}>
+                  <Award size={22} className="inline mr-2" />
+                  Download My Certificate!
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            <div className="flex justify-center mb-4">
+              {great ? <Trophy size={80} className="text-yellow-400" fill="currentColor" /> : <Heart size={80} className="text-pink-400" fill="currentColor" />}
+            </div>
+            <h2 className="text-4xl mb-2 font-black"
+                style={{ fontFamily: "'Fredoka', cursive",
+                         background: "linear-gradient(135deg,#ec4899,#a855f7)",
+                         WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              {great ? "Wonderful Work!" : "Great Effort!"}
+            </h2>
+            <p className="text-purple-700 text-xl mb-3" style={{ fontFamily: "'Fredoka', cursive" }}>
+              {name}, you scored <strong>{score} / {total}</strong>!
+            </p>
+            <p className="text-purple-600 text-md mb-5">
+              {great ? "Almost the Champion prize! Try again to unlock Sky Princess Adventure! 🦄" : "Keep practicing — every try makes you stronger! 💪✨"}
+            </p>
+            <button onClick={() => window.location.reload()}
+                    className="w-full py-4 rounded-2xl text-white text-xl font-bold transition-all hover:scale-105 active:scale-95"
+                    style={{ fontFamily: "'Fredoka', cursive",
+                             background: "linear-gradient(135deg,#ec4899,#a855f7)" }}>
+              <RefreshCw size={20} className="inline mr-2" />
+              Try Again!
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// MAIN APP
+// ==========================================
+function MathQuest() {
+  const [stage, setStage] = useState("welcome");
+  const [name, setName] = useState("");
+  const [order, setOrder] = useState([]);
+  const [qIdx, setQIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const [firstHalfScore, setFirstHalfScore] = useState(0);
+  const [finalGamePlayed, setFinalGamePlayed] = useState(false);
+
+  const startQuiz = () => {
+    if (!name.trim()) return;
+    const arr = [...QUESTIONS];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    const inputs = arr.filter((q) => q.type === "input");
+    const mcs = arr.filter((q) => q.type === "mc");
+    const mixed = [];
+    while (inputs.length || mcs.length) {
+      if (mcs.length) mixed.push(mcs.shift());
+      if (inputs.length) mixed.push(inputs.shift());
+    }
+    setOrder(mixed);
+    setQIdx(0); setScore(0); setFirstHalfScore(0);
+    setStage("quiz");
+  };
+
+  const handleAnswer = (correct) => {
+    const newScore = correct ? score + 1 : score;
+    setScore(newScore);
+    if (qIdx === 19) { setFirstHalfScore(newScore); setStage("midcheck"); return; }
+    if (qIdx === 39) { setStage("final"); return; }
+    setQIdx(qIdx + 1);
+  };
+
+  return (
+    <div className="min-h-screen relative"
+         style={{ background: "linear-gradient(135deg,#fce7f3 0%,#e9d5ff 50%,#dbeafe 100%)",
+                  fontFamily: "'Quicksand', sans-serif" }}>
+      <FloatingBackground />
+
+      {stage === "welcome" && <WelcomeScreen onStart={startQuiz} name={name} setName={setName} />}
+
+      {stage === "quiz" && order[qIdx] && (
+        <QuestionCard q={order[qIdx]} qIndex={qIdx} total={40} score={score}
+                      onAnswer={handleAnswer} name={name} />
+      )}
+
+      {stage === "midcheck" && (
+        <MidCheckpoint score={firstHalfScore} name={name}
+                       onContinue={() => { setQIdx(20); setStage("quiz"); }}
+                       onPlayGame={() => setStage("midgame")} />
+      )}
+
+      {stage === "midgame" && (
+        <CrystalCaveGame onFinish={() => { setQIdx(20); setStage("quiz"); }} />
+      )}
+
+      {stage === "final" && (
+        <FinalScreen score={score} total={40} name={name} gamePlayed={finalGamePlayed}
+                     onPlayGame={() => setStage("finalgame")} />
+      )}
+
+      {stage === "finalgame" && (
+        <SkyPrincessGame onFinish={() => { setFinalGamePlayed(true); setStage("final"); }} />
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<MathQuest />);
+</script>
+</body>
+</html>
