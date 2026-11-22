@@ -1042,6 +1042,7 @@ function updateFog(force){
 /* ================= drawing ================= */
 const FONT='Fredoka, Trebuchet MS, sans-serif';
 const TERR=document.createElement('canvas');TERR.width=WW;TERR.height=WH;
+const GND=document.createElement('canvas');let GNDKEY='';
 const FQ=6,FOGCV=document.createElement('canvas');FOGCV.width=MW*FQ;FOGCV.height=MH*FQ;
 const MQ=3,MINI=document.createElement('canvas');MINI.width=150*MQ;MINI.height=115*MQ;
 function rr(x,y,w,h,r,c=ctx){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
@@ -1068,6 +1069,7 @@ function icoRes(r,x,y,s=1){ctx.save();ctx.translate(x,y);ctx.scale(s,s);
 
 /* ---------- terrain, fog, minimap (drawn once or rarely) ---------- */
 function renderTerrain(){
+  GNDKEY='';
   const c=TERR.getContext('2d'),r=mulberry(G.w.seed^77);
   const g=c.createLinearGradient(0,0,WW,WH);g.addColorStop(0,'#E4EEFB');g.addColorStop(.5,'#F3F8FF');g.addColorStop(1,'#E9F2FD');c.fillStyle=g;c.fillRect(0,0,WW,WH);
   for(let i=0;i<260;i++){const x=r()*WW,y=r()*WH,q=40+r()*110,gg=c.createRadialGradient(x,y,0,x,y,q);const a=.10+r()*.14;
@@ -1078,8 +1080,8 @@ function renderTerrain(){
   SPOTS=[];for(let i=0;i<70;i++){const a=r()*6.28,d=40+r()*190;SPOTS.push([BX*TS+20+Math.cos(a)*d,BY*TS+40+Math.sin(a)*d*.7,6+r()*7,4+r()*4,r()*3,.25+r()*.25])}
 }
 /* crisp ground details, drawn fresh every frame for the part of the map on screen */
-function drawGroundDetail(x0,y0,x1,y1){
-  const c=ctx,vis=(x,y,m)=>x>x0-m&&x<x1+m&&y>y0-m&&y<y1+m;
+function drawGroundDetail(c,x0,y0,x1,y1){
+  const vis=(x,y,m)=>x>x0-m&&x<x1+m&&y>y0-m&&y<y1+m;
   for(const s of SPOTS){if(!vis(s[0],s[1],20))continue;c.fillStyle=`rgba(214,160,110,${s[5]})`;c.beginPath();c.ellipse(s[0],s[1],s[2],s[3],s[4],0,6.3);c.fill()}
   const P=PONDS.filter(p=>vis(p[0],p[1],40));
   if(P.length){
@@ -1337,13 +1339,17 @@ function drawUnit(u,t,selected){
 
 /* ---------- the world ---------- */
 function draw(){
-  const w=G.w,t=G.t,cam=w.cam,z=cam.z,vw=W/z,vh=H/z;ctx.setTransform(RS,0,0,RS,0,0);ctx.clearRect(0,0,W,H);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  const w=G.w,t=G.t,cam=w.cam,z=cam.z,vw=W/z,vh=H/z;ctx.setTransform(RS,0,0,RS,0,0);ctx.clearRect(0,0,W,H);ctx.imageSmoothingEnabled=true;
   let sx=0,sy=0;if(G.shake>0){sx=rnd(-4,4)*G.shake*2;sy=rnd(-4,4)*G.shake*2}
   const q=z*RS,cx=Math.round((cam.x+sx)*q)/q,cy=Math.round((cam.y+sy)*q)/q;
-  ctx.fillStyle='#16204A';ctx.fillRect(0,0,W,H);
+  /* the ground is drawn once into its own full-resolution layer and only redrawn when the view moves */
+  const key=cx+','+cy+','+z+','+cv.width+','+w.seed;
+  if(key!==GNDKEY){GNDKEY=key;if(GND.width!==cv.width||GND.height!==cv.height){GND.width=cv.width;GND.height=cv.height}
+    const c=GND.getContext('2d'),k=RS*z;c.setTransform(1,0,0,1,0,0);c.fillStyle='#16204A';c.fillRect(0,0,GND.width,GND.height);c.setTransform(k,0,0,k,-cx*k,-cy*k);
+    const vx=clamp(cx,0,WW-8),vy=clamp(cy,0,WH-8),tw=Math.min(vw+2,WW-vx),th=Math.min(vh+2,WH-vy);c.drawImage(TERR,vx,vy,tw,th,vx,vy,tw,th);
+    drawGroundDetail(c,cx,cy,cx+vw,cy+vh)}
+  ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(GND,0,0);ctx.setTransform(RS,0,0,RS,0,0);
   ctx.save();ctx.scale(z,z);ctx.translate(-cx,-cy);
-  const vx=clamp(cx,0,WW-8),vy=clamp(cy,0,WH-8),tw=Math.min(vw+2,WW-vx),th=Math.min(vh+2,WH-vy);ctx.drawImage(TERR,vx,vy,tw,th,vx,vy,tw,th);
-  drawGroundDetail(cx,cy,cx+vw,cy+vh);
   /* ground markers */
   for(const r of G.rings){const k=r.t/r.life;ctx.globalAlpha=1-k;ctx.strokeStyle=r.col;ctx.lineWidth=r.w*(1-k*.6);ctx.beginPath();ctx.ellipse(r.x,r.y,r.r+(r.max-r.r)*k,(r.r+(r.max-r.r)*k)*(r.flat?.5:.62),0,0,6.3);ctx.stroke();ctx.globalAlpha=1}
   const sel=new Set(G.sel);
