@@ -132,14 +132,14 @@ canvas{display:block;width:100%;height:auto;border-radius:24px;box-shadow:0 8px 
   <div class="home-hero">
     <div class="shell" id="secretShell" aria-hidden="true" style="user-select:none;-webkit-user-select:none;cursor:default">⛄</div>
     <h1>Frosty Fractions</h1>
-    <p>Twenty fraction-multiplying questions picked from a bank of 100, then a snowy adventure with Snowgirl and her winter friends. Every right answer earns one minute of game time, and high scores unlock starting powers. Your progress is saved, so you can close the page and come back.</p>
+    <p>Ten fraction-multiplying questions picked from a bank of 100, then a snowy adventure with Snowgirl and her winter friends. Every right answer earns one minute of game time, and high scores unlock starting powers. Your progress is saved, so you can close the page and come back.</p>
   </div>
   <div class="card">
     <div class="rules">
-      <div>❄️ 20 questions</div>
+      <div>❄️ 10 questions</div>
       <div>✏️ Answer them all, then check</div>
       <div>⛄ 1 correct = 1 game minute</div>
-      <div>🎁 15+ points = starting powers</div>
+      <div>🎁 8+ points = starting powers</div>
     </div>
     <label class="name" for="playerName">What's your name?</label>
     <div class="numrow">
@@ -458,7 +458,7 @@ const SING={hours:'hour',liters:'liter',meters:'meter',feet:'foot'};
 
 /* @@BANK-END@@ */
 
-/* ---------------- pick 20, balance answer letters ---------------- */
+/* ---------------- pick 10 (4 multiple choice + 6 typed), balance answer letters ---------------- */
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function maxRun(a){let m=1,c=1;for(let i=1;i<a.length;i++){c=a[i]===a[i-1]?c+1:1;m=Math.max(m,c)}return m}
 function balancedPositions(n){const base=[];for(let i=0;i<n;i++)base.push(i%4);let p;do{p=shuffle(base)}while(maxRun(p)>2);return p}
@@ -470,7 +470,7 @@ function pickFrom(pool,n,avoid){
 }
 function newSet(prevIds){
   const avoid=new Set(prevIds||[]);
-  const chosen=shuffle([...pickFrom(BANK.filter(q=>q.kind==='mc'),8,avoid),...pickFrom(BANK.filter(q=>q.kind==='num'),12,avoid)]);
+  const chosen=shuffle([...pickFrom(BANK.filter(q=>q.kind==='mc'),4,avoid),...pickFrom(BANK.filter(q=>q.kind==='num'),6,avoid)]);
   const mcs=chosen.filter(q=>q.kind==='mc'),pos=balancedPositions(mcs.length);
   return chosen.map(q=>{
     if(q.kind!=='mc')return {id:q.id};
@@ -503,7 +503,7 @@ function setPos(v){if(isRetry())cur2=v;else cur=v}
 function renderHome(){
   $('playerName').value=player;
   const h=(S.history||[]).slice(-5);
-  $('history').innerHTML=h.length?`Your last ${h.length===1?'score':h.length+' scores'}: ${h.map(x=>`<b>${half(x.n)}/20</b>`).join(', ')}`:'';
+  $('history').innerHTML=h.length?`Your last ${h.length===1?'score':h.length+' scores'}: ${h.map(x=>`<b>${half(x.n)}/${x.of||20}</b>`).join(', ')}`:'';
 }
 $('startBtn').onclick=()=>{
   player=$('playerName').value.trim();
@@ -608,7 +608,7 @@ function finalGrade(){
   const points=first+second/2,minutes=points;
   S.phase='results';S.result={points,first,second,minutes};
   S.game={remaining:minutes*60000,level:1,score:0,pearls:0,hearts:3,friendsMet:{},over:minutes<=0,started:false};
-  S.history=[...(S.history||[]),{n:points,date:new Date().toISOString().slice(0,10)}].slice(-20);
+  S.history=[...(S.history||[]),{n:points,of:QUESTIONS.length,date:new Date().toISOString().slice(0,10)}].slice(-20);
   saveState();renderResults();show('results');
 }
 function mmss(ms){const m=Math.floor(ms/60000),s=Math.floor(ms/1000)%60;return `${m}:${String(s).padStart(2,'0')}`}
@@ -624,7 +624,7 @@ function renderResults(){
   else if(g.over)gameLine=`<div class="reward">⛄ You used all ${mins} of game time. Try a new set of questions to earn more!</div><br>`;
   else if(g.started)gameLine=`<div class="reward">⛄ <b>${mmss(g.remaining)}</b> of game time left (level ${g.level})</div><br><button class="btn" id="playBtn">Continue the game</button>`;
   else gameLine=`<div class="reward">⛄ You earned <b>${mins}</b> of snowy adventure</div>
-    <p class="bonus">🎁 Starting powers: ${points>=15?'<b class="got">✓ Penguin ice shield unlocked</b>':'score 15 or more for a Penguin ice shield'}${points>=18?' <b class="got">✓ Arctic Fox gem magnet unlocked</b>':', and 18 or more for an Arctic Fox gem magnet'}.</p>
+    <p class="bonus">🎁 Starting powers: ${points>=8?'<b class="got">✓ Penguin ice shield unlocked</b>':'score 8 or more for a Penguin ice shield'}${points>=9?' <b class="got">✓ Arctic Fox gem magnet unlocked</b>':', and 9 or more for an Arctic Fox gem magnet'}.</p>
     <button class="btn" id="playBtn">Start the snowy adventure</button>`;
   const breakdown=(S.retryIdx||[]).length?`<p class="breakdown"><span class="bd b1">✓ ${first} on the first try (1 point each)</span><span class="bd b2">✓ ${second} fixed on the second try (½ point each)</span>${st.length-first-second?`<span class="bd b3">✗ ${st.length-first-second} still to learn</span>`:''}</p>`:'';
   $('scorebox').innerHTML=`<h2>${player?player+', here':'Here'} are your results</h2>
@@ -828,9 +828,9 @@ function startGame(saved,resumed){
      friendsMet:Object.assign({},saved.friendsMet||{}), lastHelper:null};
   buildLevel();
   if(!resumed&&!saved.started&&!S.bonus&&S.result){const pts=S.result.points;   /* quiz score unlocks starting powers */
-    if(pts>=15){G.pow.penguin=HELPERS.penguin.dur;G.friendsMet.penguin=true}
-    if(pts>=18){G.pow.fox=HELPERS.fox.dur;G.friendsMet.fox=true}
-    if(pts>=15)G.msg={text:G.B.name,sub:pts>=18?'Bonus: Penguin shield + Arctic Fox magnet!':'Bonus: Penguin ice shield!',time:220,big:true};}
+    if(pts>=8){G.pow.penguin=HELPERS.penguin.dur;G.friendsMet.penguin=true}
+    if(pts>=9){G.pow.fox=HELPERS.fox.dur;G.friendsMet.fox=true}
+    if(pts>=8)G.msg={text:G.B.name,sub:pts>=9?'Bonus: Penguin shield + Arctic Fox magnet!':'Bonus: Penguin ice shield!',time:220,big:true};}
   hideOv();
   cancelAnimationFrame(raf);
   raf=requestAnimationFrame(loop);
